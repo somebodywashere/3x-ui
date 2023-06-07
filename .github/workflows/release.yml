@@ -35,7 +35,7 @@ jobs:
           if [ "${{ matrix.platform }}" == "arm64" ]; then
             export CC=aarch64-linux-gnu-gcc
           fi
-          go build -o xui-release -v main.go
+          XUI_LOG_LEVEL="debug" go build -o xui-release -v main.go
           
           mkdir x-ui
           cp xui-release x-ui/

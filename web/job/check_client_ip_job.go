@@ -254,7 +254,7 @@ func LimitDevice() {
 	localIp, err := LocalIP()
 	checkError(err)
 
-	c := cmd.NewCmd("bash", "-c", "ss --tcp | grep -E '"+IPsToRegex(localIp)+"'| awk '{if($1==\"ESTAB\") print $4,$5;}'", "| sort | uniq -c | sort -nr | head")
+	c := cmd.NewCmd("bash", "-c", "ss -o state established --tcp | grep -E '"+IPsToRegex(localIp)+"'| awk '{print $3,$4}' | sort | uniq -c | sort -nr")
 
 	<-c.Start()
 	if len(c.Status().Stdout) > 0 {

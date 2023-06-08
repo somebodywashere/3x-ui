@@ -213,7 +213,7 @@ func updateInboundClientIps(inboundClientIps *model.InboundClientIps, clientEmai
 				 
 				disAllowedIps = append(disAllowedIps, ips[limitIp:]...)
 				for i:=limitIp; i < len(ips); i++ {
-					logger.Warning("[LIMIT_IP] SRC=", ips[i])
+					logger.Info("[LIMIT_IP] SRC=", ips[i])
 				}
 				return true
 			}

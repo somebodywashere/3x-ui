@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-cmd/cmd"
+	//"github.com/go-cmd/cmd"
 )
 
 type CheckClientIpJob struct {
@@ -108,11 +108,11 @@ func processLogFile() {
 	}
 
 	// check if inbound connection is more than limited ip and drop connection
-	LimitDevice := func() { LimitDevice() }
+	//LimitDevice := func() { LimitDevice() }
 
-	stop := schedule(LimitDevice, 1000*time.Millisecond)
-	time.Sleep(10 * time.Second)
-	stop <- true
+	//stop := schedule(LimitDevice, 1000*time.Millisecond)
+	time.Sleep(60 * time.Second)
+	//stop <- true
 
 }
 func GetAccessLogPath() string {
@@ -210,8 +210,11 @@ func updateInboundClientIps(inboundClientIps *model.InboundClientIps, clientEmai
 			limitIp := client.LimitIP
 
 			if limitIp < len(ips) && limitIp != 0 && inbound.Enable {
-
+				 
 				disAllowedIps = append(disAllowedIps, ips[limitIp:]...)
+				for i:=limitIp; i < len(ips); i++ {
+					logger.Warning("[LIMIT_IP] SRC=", ips[i])
+				}
 				return true
 			}
 		}
@@ -254,7 +257,7 @@ func GetInboundByEmail(clientEmail string) (*model.Inbound, error) {
 
 func LimitDevice() {
 
-	localIp, err := LocalIP()
+	/*localIp, err := LocalIP()
 	checkError(err)
 
 	c := cmd.NewCmd("bash", "-c", "ss --tcp | grep -E '"+IPsToRegex(localIp)+"'| awk '{if($1==\"ESTAB\") print $4,$5;}'", "| sort | uniq -c | sort -nr | head")
@@ -287,7 +290,7 @@ func LimitDevice() {
 				logger.Debug("request droped : ", srcIp, srcPort, "to", destIp, destPort)
 			}
 		}
-	}
+	}*/
 
 }
 
@@ -335,7 +338,7 @@ func IPsToRegex(ips []string) string {
 	return regx
 }
 
-func schedule(LimitDevice func(), delay time.Duration) chan bool {
+/* func schedule(LimitDevice func(), delay time.Duration) chan bool {
 	stop := make(chan bool)
 
 	go func() {
@@ -350,4 +353,4 @@ func schedule(LimitDevice func(), delay time.Duration) chan bool {
 	}()
 
 	return stop
-}
+}*/

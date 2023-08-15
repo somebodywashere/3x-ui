@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
+
 	"x-ui/config"
 	"x-ui/logger"
 	"x-ui/util/common"
@@ -38,6 +40,10 @@ func GetGeositePath() string {
 
 func GetGeoipPath() string {
 	return config.GetBinFolderPath() + "/geoip.dat"
+}
+
+func GetIranPath() string {
+	return config.GetBinFolderPath() + "/iran.dat"
 }
 
 func GetIPLimitLogPath() string {
@@ -96,16 +102,18 @@ type process struct {
 	version string
 	apiPort int
 
-	config  *Config
-	lines   *queue.Queue
-	exitErr error
+	config    *Config
+	lines     *queue.Queue
+	exitErr   error
+	startTime time.Time
 }
 
 func newProcess(config *Config) *process {
 	return &process{
-		version: "Unknown",
-		config:  config,
-		lines:   queue.New(100),
+		version:   "Unknown",
+		config:    config,
+		lines:     queue.New(100),
+		startTime: time.Now(),
 	}
 }
 
@@ -147,6 +155,10 @@ func (p *Process) GetAPIPort() int {
 
 func (p *Process) GetConfig() *Config {
 	return p.config
+}
+
+func (p *Process) GetUptime() uint64 {
+	return uint64(time.Since(p.startTime).Seconds())
 }
 
 func (p *process) refreshAPIPort() {

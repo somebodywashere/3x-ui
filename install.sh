@@ -53,20 +53,27 @@ elif [[ "${release}" == "debian" ]]; then
     if [[ ${os_version} -lt 10 ]]; then
         echo -e "${red} Please use Debian 10 or higher ${plain}\n" && exit 1
     fi
+elif [[ "${release}" == "arch" ]]; then
+    echo "OS is ArchLinux"
+
 else
     echo -e "${red}Failed to check the OS version, please contact the author!${plain}" && exit 1
 fi
 
 install_base() {
     case "${release}" in
-    centos | fedora)
-        yum install -y -q wget curl tar
-        ;;
-    *)
-        apt install -y -q wget curl tar
-        ;;
+        centos|fedora)
+            yum install -y -q wget curl tar
+            ;;
+        arch)
+            pacman -Syu --noconfirm wget curl tar
+            ;;
+        *)
+            apt install -y -q wget curl tar
+            ;;
     esac
 }
+
 
 # This function will be called when user installed x-ui out of sercurity
 config_after_install() {
@@ -104,7 +111,6 @@ config_after_install() {
 }
 
 install_x-ui() {
-    systemctl stop x-ui
     cd /usr/local/
 
     if [ $# == 0 ]; then
@@ -131,6 +137,7 @@ install_x-ui() {
     fi
 
     if [[ -e /usr/local/x-ui/ ]]; then
+        systemctl stop x-ui
         rm /usr/local/x-ui/ -rf
     fi
 

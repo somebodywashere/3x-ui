@@ -740,17 +740,19 @@ func (t *Tgbot) getClientUsage(chatId int64, tgUserName string, tgUserID string)
 			total = common.FormatTraffic((traffic.Total))
 		}
 
-		output := ""
-		output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
+		active := ""
 		if traffic.Enable {
-			output += t.I18nBot("tgbot.messages.active")
-			if flag {
-				output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
-			} else {
-				output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
-			}
+			active = t.I18nBot("tgbot.messages.yes")
 		} else {
-			output += t.I18nBot("tgbot.messages.inactive")
+			active = t.I18nBot("tgbot.messages.no")
+		}
+
+		output := ""
+		output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
+		output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
+		if flag {
+			output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
+		} else {
 			output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
 		}
 		output += t.I18nBot("tgbot.messages.upload", "Upload=="+common.FormatTraffic(traffic.Up))
@@ -878,19 +880,23 @@ func (t *Tgbot) searchClient(chatId int64, email string, messageID ...int) {
 		total = common.FormatTraffic((traffic.Total))
 	}
 
-	output := ""
-	output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
+	active := ""
 	if traffic.Enable {
-		output += t.I18nBot("tgbot.messages.active")
-		if flag {
-			output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
-		} else {
-			output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
-		}
+		active = t.I18nBot("tgbot.messages.yes")
 	} else {
-		output += t.I18nBot("tgbot.messages.inactive")
+		active = t.I18nBot("tgbot.messages.no")
+	}
+
+	output := ""
+	output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
+	output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
+
+	if flag {
+		output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
+	} else {
 		output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
 	}
+
 	output += t.I18nBot("tgbot.messages.upload", "Upload=="+common.FormatTraffic(traffic.Up))
 	output += t.I18nBot("tgbot.messages.download", "Download=="+common.FormatTraffic(traffic.Down))
 	output += t.I18nBot("tgbot.messages.total", "UpDown=="+common.FormatTraffic((traffic.Up+traffic.Down)), "Total=="+total)
@@ -976,19 +982,23 @@ func (t *Tgbot) searchInbound(chatId int64, remark string) {
 				total = common.FormatTraffic((traffic.Total))
 			}
 
-			output := ""
-			output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
+			active := ""
 			if traffic.Enable {
-				output += t.I18nBot("tgbot.messages.active")
-				if flag {
-					output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
-				} else {
-					output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
-				}
+				active = t.I18nBot("tgbot.messages.yes")
 			} else {
-				output += t.I18nBot("tgbot.messages.inactive")
+				active = t.I18nBot("tgbot.messages.no")
+			}
+
+			output := ""
+			output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
+			output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
+
+			if flag {
+				output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
+			} else {
 				output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
 			}
+
 			output += t.I18nBot("tgbot.messages.upload", "Upload=="+common.FormatTraffic(traffic.Up))
 			output += t.I18nBot("tgbot.messages.download", "Download=="+common.FormatTraffic(traffic.Down))
 			output += t.I18nBot("tgbot.messages.total", "UpDown=="+common.FormatTraffic((traffic.Up+traffic.Down)), "Total=="+total)
@@ -1036,19 +1046,23 @@ func (t *Tgbot) searchForClient(chatId int64, query string) {
 		total = common.FormatTraffic((traffic.Total))
 	}
 
-	output := ""
-	output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
+	active := ""
 	if traffic.Enable {
-		output += t.I18nBot("tgbot.messages.active")
-		if flag {
-			output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
-		} else {
-			output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
-		}
+		active = t.I18nBot("tgbot.messages.yes")
 	} else {
-		output += t.I18nBot("tgbot.messages.inactive")
+		active = t.I18nBot("tgbot.messages.no")
+	}
+
+	output := ""
+	output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
+	output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
+
+	if flag {
+		output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
+	} else {
 		output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
 	}
+
 	output += t.I18nBot("tgbot.messages.upload", "Upload=="+common.FormatTraffic(traffic.Up))
 	output += t.I18nBot("tgbot.messages.download", "Download=="+common.FormatTraffic(traffic.Down))
 	output += t.I18nBot("tgbot.messages.total", "UpDown=="+common.FormatTraffic((traffic.Up+traffic.Down)), "Total=="+total)
@@ -1157,18 +1171,22 @@ func (t *Tgbot) getExhausted() string {
 				total = common.FormatTraffic((traffic.Total))
 			}
 
-			output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
+			active := ""
 			if traffic.Enable {
-				output += t.I18nBot("tgbot.messages.active")
-				if flag {
-					output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
-				} else {
-					output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
-				}
+				active = t.I18nBot("tgbot.messages.yes")
 			} else {
-				output += t.I18nBot("tgbot.messages.inactive")
+				active = t.I18nBot("tgbot.messages.no")
+			}
+
+			output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
+			output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
+
+			if flag {
+				output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
+			} else {
 				output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
 			}
+
 			output += t.I18nBot("tgbot.messages.upload", "Upload=="+common.FormatTraffic(traffic.Up))
 			output += t.I18nBot("tgbot.messages.download", "Download=="+common.FormatTraffic(traffic.Down))
 			output += t.I18nBot("tgbot.messages.total", "UpDown=="+common.FormatTraffic((traffic.Up+traffic.Down)), "Total=="+total)

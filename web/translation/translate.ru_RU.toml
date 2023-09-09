@@ -452,6 +452,8 @@
 "depleteSoon" = "🔜 Скоро исчерпание: {{ .Deplete }}\r\n \r\n"
 "backupTime" = "🗄 Время резервного копирования: {{ .Time }}\r\n"
 "refreshedOn" = "\r\n📋🔄 Обновлено: {{ .Time }}\r\n \r\n"
+"yes" = "✅ Да"
+"no" = "❌ Нет"
 
 [tgbot.buttons]
 "closeKeyboard" = "❌ Закрыть клавиатуру"

@@ -452,6 +452,8 @@
 "depleteSoon" = "🔜 Deplete soon: {{ .Deplete }}\r\n \r\n"
 "backupTime" = "🗄 Backup Time: {{ .Time }}\r\n"
 "refreshedOn" = "\r\n📋🔄 Refreshed On: {{ .Time }}\r\n \r\n"
+"yes" = "✅ Yes"
+"no" = "❌ No"
 
 [tgbot.buttons]
 "closeKeyboard" = "❌ Close Keyboard"

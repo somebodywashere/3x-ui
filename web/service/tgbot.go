@@ -192,7 +192,7 @@ func (t *Tgbot) OnReceive() {
 func (t *Tgbot) answerCommand(message *telego.Message, chatId int64, isAdmin bool) {
 	msg, onlyMessage := "", false
 
-	command, commandArgs := tu.ParseCommand(message.Text)
+	command, _, commandArgs := tu.ParseCommand(message.Text)
 
 	// Extract the command from the Message.
 	switch command {
@@ -740,7 +740,15 @@ func (t *Tgbot) getClientUsage(chatId int64, tgUserName string, tgUserID string)
 			total = common.FormatTraffic((traffic.Total))
 		}
 
+		active := ""
+		if traffic.Enable {
+			active = t.I18nBot("tgbot.messages.yes")
+		} else {
+			active = t.I18nBot("tgbot.messages.no")
+		}
+
 		output := ""
+		output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
 		output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
 		if traffic.Enable {
 			output += t.I18nBot("tgbot.messages.active")
@@ -878,7 +886,15 @@ func (t *Tgbot) searchClient(chatId int64, email string, messageID ...int) {
 		total = common.FormatTraffic((traffic.Total))
 	}
 
+	active := ""
+	if traffic.Enable {
+		active = t.I18nBot("tgbot.messages.yes")
+	} else {
+		active = t.I18nBot("tgbot.messages.no")
+	}
+
 	output := ""
+	output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
 	output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
 	if traffic.Enable {
 		output += t.I18nBot("tgbot.messages.active")
@@ -976,7 +992,15 @@ func (t *Tgbot) searchInbound(chatId int64, remark string) {
 				total = common.FormatTraffic((traffic.Total))
 			}
 
+			active := ""
+			if traffic.Enable {
+				active = t.I18nBot("tgbot.messages.yes")
+			} else {
+				active = t.I18nBot("tgbot.messages.no")
+			}
+
 			output := ""
+			output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
 			output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
 			if traffic.Enable {
 				output += t.I18nBot("tgbot.messages.active")
@@ -1036,7 +1060,15 @@ func (t *Tgbot) searchForClient(chatId int64, query string) {
 		total = common.FormatTraffic((traffic.Total))
 	}
 
+	active := ""
+	if traffic.Enable {
+		active = t.I18nBot("tgbot.messages.yes")
+	} else {
+		active = t.I18nBot("tgbot.messages.no")
+	}
+
 	output := ""
+	output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
 	output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
 	if traffic.Enable {
 		output += t.I18nBot("tgbot.messages.active")
@@ -1157,6 +1189,14 @@ func (t *Tgbot) getExhausted() string {
 				total = common.FormatTraffic((traffic.Total))
 			}
 
+			active := ""
+			if traffic.Enable {
+				active = t.I18nBot("tgbot.messages.yes")
+			} else {
+				active = t.I18nBot("tgbot.messages.no")
+			}
+
+			output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
 			output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
 			if traffic.Enable {
 				output += t.I18nBot("tgbot.messages.active")

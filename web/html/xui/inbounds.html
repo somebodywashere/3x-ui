@@ -820,11 +820,19 @@
                 }
                 return newDbInbound;
             },
-            showQrcode(dbInbound, clientIndex) {
+            showQrcode(dbInboundId, client) {
+                dbInbound = this.dbInbounds.find(row => row.id === dbInboundId);
+                inbound = dbInbound.toInbound();
+                clients = this.getClients(dbInbound.protocol, inbound.settings);
+                index = this.findIndexOfClient(dbInbound.protocol, clients, client);
                 newDbInbound = this.checkFallback(dbInbound);
-                qrModal.show('{{ i18n "qrCode"}}', newDbInbound, clientIndex);
+                qrModal.show('{{ i18n "qrCode"}}', newDbInbound, index);
             },
-            showInfo(dbInbound, index) {
+            showInfo(dbInboundId, client) {
+                dbInbound = this.dbInbounds.find(row => row.id === dbInboundId);
+                inbound = dbInbound.toInbound();
+                clients = this.getClients(dbInbound.protocol, inbound.settings);
+                index = this.findIndexOfClient(dbInbound.protocol, clients, client);
                 newDbInbound = this.checkFallback(dbInbound);
                 infoModal.show(newDbInbound, index);
             },
@@ -922,8 +930,8 @@
                 clientStats = dbInbound.clientStats ? dbInbound.clientStats.find(stats => stats.email === email) : null
                 return clientStats ? clientStats['enable'] : true
             },
-            isRemovable(dbInbound_id) {
-                return this.getInboundClients(this.dbInbounds.find(row => row.id === dbInbound_id)).length > 1
+            isRemovable(dbInboundId) {
+                return this.getInboundClients(this.dbInbounds.find(row => row.id === dbInboundId)).length > 1
             },
             inboundLinks(dbInboundId) {
                 dbInbound = this.dbInbounds.find(row => row.id === dbInboundId);

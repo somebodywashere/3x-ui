@@ -279,6 +279,7 @@ body {
 .ant-card-dark .ant-progress-text,
 .ant-card-dark .ant-modal-close,
 .ant-card-dark i,
+.ant-card-dark .ant-pagination-item a,
 .ant-card-dark .ant-select-dropdown-menu-item,
 .ant-card-dark .ant-calendar-day-select,
 .ant-card-dark .ant-calendar-month-select,
@@ -315,6 +316,7 @@ body {
 .ant-card-dark .ant-input-number,
 .ant-card-dark .ant-input-number-handler-wrap,
 .ant-card-dark .ant-calendar-input,
+.ant-card-dark .ant-pagination-item,
 .ant-card-dark .ant-select-dropdown-menu-item-selected,
 .ant-card-dark .ant-select-selection,
 .ant-card-dark .ant-calendar-picker-clear {
@@ -350,6 +352,7 @@ body {
 }
 
 .ant-card-dark .ant-modal-content,
+.ant-card-dark .ant-select-dropdown,
 .ant-card-dark .ant-modal-body,
 .ant-card-dark .ant-modal-header {
     color: hsla(0,0%,100%,.65);
@@ -482,6 +485,10 @@ body {
 
 .ant-dark .ant-popover-placement-top>.ant-popover-content>.ant-popover-arrow {
     border-color: transparent #2e3b52 #2e3b52 transparent;
+}
+
+.ant-table-pagination.ant-pagination {
+    float: left;
 }
 
 ::-webkit-scrollbar {

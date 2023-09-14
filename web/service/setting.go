@@ -31,6 +31,7 @@ var defaultValueMap = map[string]string{
 	"secret":             random.Seq(32),
 	"webBasePath":        "/",
 	"sessionMaxAge":      "0",
+	"pageSize":           "0",
 	"expireDiff":         "0",
 	"trafficDiff":        "0",
 	"timeLocation":       "Asia/Tehran",
@@ -404,6 +405,10 @@ func (s *SettingService) GetSubEncrypt() (bool, error) {
 
 func (s *SettingService) GetSubShowInfo() (bool, error) {
 	return s.getBool("subShowInfo")
+}
+
+func (s *SettingService) GetPageSize() (int, error) {
+	return s.getInt("pageSize")
 }
 
 func (s *SettingService) UpdateAllSetting(allSetting *entity.AllSetting) error {

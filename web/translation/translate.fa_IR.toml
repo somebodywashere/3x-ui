@@ -230,6 +230,8 @@
 "privateKeyPathDesc" = "باید یک مسیر مطلق باشد که با / شروع می شود "
 "panelUrlPath" = "آدرس روت پنل"
 "panelUrlPathDesc" = "باید با '/' شروع شود و با '/' تمام شود"
+"pageSize" = "اندازه صفحه بندی جدول"
+"pageSizeDesc" = "اندازه صفحه را برای جدول سرویس ها تعریف کنید. 0: غیرفعال"
 "oldUsername" = "نام کاربری فعلی"
 "currentPassword" = "رمز عبور فعلی"
 "newUsername" = "نام کاربری جدید"

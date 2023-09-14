@@ -122,13 +122,12 @@
                         <a-table :columns="columns" :row-key="dbInbound => dbInbound.id"
                                  :data-source="searchedInbounds"
                                  :loading="spinning" :scroll="{ x: 1200 }"
-                                 :pagination="false"
+                                 :pagination=pagination(searchedInbounds)
                                  :expand-icon-as-cell="false"
                                  :expand-row-by-click="false"
                                  :expand-icon-column-index="0"
                                  :row-class-name="dbInbound => (dbInbound.isTrojan || dbInbound.isVLess || dbInbound.isVMess || (dbInbound.isSS && dbInbound.toInbound().isSSMultiUser) ? '' : 'hideExpandIcon')"
-                                 style="margin-top: 20px"
-                                 @change="() => getDBInbounds()">
+                                 style="margin-top: 20px">
                             <template slot="action" slot-scope="text, dbInbound">
                                 <a-icon type="edit" style="font-size: 22px" @click="openEditInbound(dbInbound.id);"></a-icon>
                                 <a-dropdown :trigger="['click']">
@@ -257,22 +256,22 @@
                             </template>
                             <template slot="expandedRowRender" slot-scope="record">
                                 <a-table
-                                v-if="(record.protocol === Protocols.VLESS) || (record.protocol === Protocols.VMESS)"
-                                :row-key="client => client.id"
-                                :columns="innerColumns"
-                                :data-source="getInboundClients(record)"
-                                :pagination="false"
-                                style="margin-left: 20px;"
+                                    v-if="(record.protocol === Protocols.VLESS) || (record.protocol === Protocols.VMESS)"
+                                    :row-key="client => client.id"
+                                    :columns="innerColumns"
+                                    :data-source="getInboundClients(record)"
+                                    :pagination=pagination(getInboundClients(record))
+                                    style="margin-left: 20px;"
                                 >
                                     {{template "client_table"}}
                                 </a-table>
                                 <a-table
-                                v-else-if="record.protocol === Protocols.TROJAN || record.toInbound().isSSMultiUser"
-                                :row-key="client => client.id"
-                                :columns="innerTrojanColumns"
-                                :data-source="getInboundClients(record)"
-                                :pagination="false"
-                                style="margin-left: 20px;"
+                                    v-else-if="record.protocol === Protocols.TROJAN || record.toInbound().isSSMultiUser"
+                                    :row-key="client => client.id"
+                                    :columns="innerTrojanColumns"
+                                    :data-source="getInboundClients(record)"
+                                    :pagination=pagination(getInboundClients(record))
+                                    style="margin-left: 20px;"
                                 >
                                     {{template "client_table"}}
                                 </a-table>
@@ -292,6 +291,7 @@
         align: 'right',
         dataIndex: "id",
         width: 30,
+        responsive: ["xs"],
     }, {
         title: '{{ i18n "pages.inbounds.operate" }}',
         align: 'center',
@@ -380,7 +380,9 @@
                 domain: '',
                 tls: false
             },
-            tgBotEnable: false
+            tgBotEnable: false,
+            showAlert: false,
+            pageSize: 0,
         },
         methods: {
             loading(spinning = true) {
@@ -416,6 +418,7 @@
                         domain: subDomain,
                         tls: subTLS
                     };
+                    this.pageSize = pageSize;
                 }
             },
             setInbounds(dbInbounds) {
@@ -971,6 +974,27 @@
                     this.spinning = false;
                 }
             },
+            pagination(obj){
+                if (this.pageSize > 0 && obj.length>this.pageSize) {
+                    // Set page options based on object size
+                    sizeOptions = []
+                    for (i=this.pageSize;i<=obj.length;i=i+this.pageSize) {
+                        sizeOptions.push(i.toString());
+                    }
+                    // Add option to see all in one page
+                    sizeOptions.push(i.toString());
+                    
+                    p = {
+                        showSizeChanger: true,
+                        size: 'small',
+                        position: 'bottom',
+                        pageSize: this.pageSize,
+                        pageSizeOptions: sizeOptions
+                    }
+                    return p
+                }
+                return false
+            }
         },
         watch: {
             searchKey: debounce(function (newVal) {

@@ -81,6 +81,7 @@ func (a *SettingController) getDefaultSettings(c *gin.Context) {
 		"subCertFile": func() (interface{}, error) { return a.settingService.GetSubCertFile() },
 		"subEncrypt":  func() (interface{}, error) { return a.settingService.GetSubEncrypt() },
 		"subShowInfo": func() (interface{}, error) { return a.settingService.GetSubShowInfo() },
+		"pageSize":    func() (interface{}, error) { return a.settingService.GetPageSize() },
 	}
 
 	result := make(map[string]interface{})

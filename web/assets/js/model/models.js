@@ -174,6 +174,7 @@ class AllSetting {
         this.webKeyFile = "";
         this.webBasePath = "/";
         this.sessionMaxAge = "";
+        this.pageSize = 0;
         this.expireDiff = "";
         this.trafficDiff = "";
         this.tgBotEnable = false;

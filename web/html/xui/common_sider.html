@@ -26,7 +26,7 @@
 <a-layout-sider :theme="themeSwitcher.currentTheme" id="sider" collapsible breakpoint="md" collapsed-width="0">
     <a-menu :theme="themeSwitcher.currentTheme" mode="inline" selected-keys="">
         <a-menu-item mode="inline">
-            <a-icon type="bg-colors"></a-icon>
+            <a-icon type="bulb" theme="twoTone" :two-tone-color="themeSwitcher.isDarkTheme ? 'orange':''"></a-icon>
             <theme-switch />
         </a-menu-item>
     </a-menu>
@@ -45,7 +45,7 @@
     </div>
     <a-menu :theme="themeSwitcher.currentTheme" mode="inline" selected-keys="">
         <a-menu-item mode="inline">
-            <a-icon type="bg-colors"></a-icon>
+            <a-icon type="bulb" theme="twoTone" :two-tone-color="themeSwitcher.isDarkTheme ? 'orange':''"></a-icon>
             <theme-switch />
         </a-menu-item>
     </a-menu>

@@ -176,7 +176,7 @@ body {
 
 .ant-table-tbody>tr>td,
 .ant-table-thead>tr>th{
-    padding:16px;
+    padding:16px 5px;
 }
 
 .ant-table-expand-icon-th,

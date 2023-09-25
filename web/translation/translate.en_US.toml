@@ -167,10 +167,18 @@
 "IPLimitlogDesc" = "IPs history log (before enabling inbound after it has been disabled by IP limit, you should clear the log)."
 "IPLimitlogclear" = "Clear The Log"
 "setDefaultCert" = "Set cert from panel"
+<<<<<<< HEAD
 "xtlsDesc" = "Xray core needs to be 1.7.5"
 "realityDesc" = "Xray core needs to be 1.8.0 or higher."
 "telegramDesc" = "use Telegram ID without @ or chat IDs ( you can get it here @userinfobot or use '/id' command in bot )"
 "subscriptionDesc" = "you can find your sub link on Details, also you can use the same name for several configurations"
+=======
+"xtlsDesc" = "Xray core needs to be 1.7.5"
+"realityDesc" = "Xray core needs to be 1.8.0 or higher."
+"telegramDesc" = "Use Telegram ID without @ or chat IDs ( you can get it here @userinfobot or use '/id' command in bot )"
+"subscriptionDesc" = "You can find your sub link on Details, also you can use the same name for several configurations"
+"info" = "Info"
+>>>>>>> 42851ed ([new face] initialize)
 
 [pages.client]
 "add" = "Add Client"

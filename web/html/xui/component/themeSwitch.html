@@ -1,8 +1,6 @@
 {{define "component/themeSwitchTemplate"}}
 <template>
-  <a-switch :default-checked="themeSwitcher.isDarkTheme"
-            checked-children="☀"
-            un-checked-children="🌙"
+  <a-switch size="small" :default-checked="themeSwitcher.isDarkTheme"
             @change="themeSwitcher.toggleTheme()">
   </a-switch>
 </template>

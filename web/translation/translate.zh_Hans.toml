@@ -171,6 +171,7 @@
 "realityDesc" = "Xray核心需要1.8.0及以上版本"
 "telegramDesc" = "使用 Telegram ID，不包含 @ 符号或聊天 ID（可以在 @userinfobot 处获取，或在机器人中使用'/id'命令）"
 "subscriptionDesc" = "您可以在详细信息上找到您的子链接，也可以对多个配置使用相同的名称"
+"info" = "信息"
 
 [pages.client]
 "add" = "添加客户端"

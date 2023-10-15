@@ -1,7 +1,8 @@
 {{define "form/tlsSettings"}}
 <!-- tls enable -->
-<a-form layout="inline" v-if="inbound.canSetTls()">
-    <a-form-item v-if="inbound.canEnableTls()" label="TLS">
+<a-form v-if="inbound.canSetTls()" layout="inline">
+    <a-divider style="margin:0;"></a-divider>
+    <a-form-item label="TLS">
         <a-switch v-model="inbound.tls">
         </a-switch>
     </a-form-item>

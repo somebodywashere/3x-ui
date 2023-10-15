@@ -134,7 +134,7 @@
     
     <!-- vless fallbacks -->
     <a-form v-for="(fallback, index) in inbound.settings.fallbacks" layout="inline">
-        <a-divider>
+        <a-divider style="margin:0;">
             fallback[[ index + 1 ]]
             <a-icon type="delete" @click="() => inbound.settings.delFallback(index)"
                     style="color: rgb(255, 77, 79);cursor: pointer;"/>
@@ -154,7 +154,7 @@
         <a-form-item label="xVer">
             <a-input-number v-model="fallback.xver"></a-input-number>
         </a-form-item>
-        <a-divider v-if="inbound.settings.fallbacks.length - 1 === index"/>
     </a-form>
+    <a-divider style="margin:0;"></a-divider>
 </template>
 {{end}}

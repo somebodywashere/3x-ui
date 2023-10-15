@@ -38,6 +38,8 @@
 "disabled" = "غیرفعال"
 "depleted" = "منقضی"
 "depletingSoon" = "در حال انقضا"
+"offline" = "آفلاین"
+"online" = "آنلاین"
 "domainName" = "آدرس دامنه"
 "monitor" = "آی پی اتصال"
 "certificate" = "گواهی دیجیتال"

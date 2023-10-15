@@ -23,8 +23,24 @@
 </template>
 <template slot="enable" slot-scope="text, client, index">
     <a-switch v-model="client.enable" @change="switchEnableClient(record.id,client)"></a-switch>
-</template>   
+</template>
+<template slot="online" slot-scope="text, client, index">
+    <template v-if="isClientOnline(client.email)">
+        <a-tag color="green">{{ i18n "online" }}</a-tag>
+    </template>
+    <template v-else>
+        <a-tag>{{ i18n "offline" }}</a-tag>
+    </template>
+</template>
 <template slot="client" slot-scope="text, client">
+    <a-tooltip>
+        <template slot="title">
+            <template v-if="!isClientEnabled(record, client.email)">{{ i18n "depleted" }}</template>
+            <template v-else-if="isClientOnline(client.email)">{{ i18n "online" }}</template>
+        </template>
+    <a-badge :status="isClientOnline(client.email)? 'processing' : ''" :color="statsExpColor(record, client.email)">
+    </a-badge>
+    </a-tooltip>
     [[ client.email ]]
     <a-tag v-if="!isClientEnabled(record, client.email)" color="red">{{ i18n "depleted" }}</a-tag>
 </template>                                    

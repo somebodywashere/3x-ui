@@ -38,6 +38,8 @@
 "disabled" = "关闭"
 "depleted" = "耗尽"
 "depletingSoon" = "即将耗尽"
+"offline" = "离线"
+"online" = "在线"
 "domainName" = "域名"
 "monitor" = "监听"
 "certificate" = "证书"

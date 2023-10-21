@@ -238,8 +238,8 @@ func (s *Server) startTask() {
 	if err != nil {
 		logger.Warning("start xray failed:", err)
 	}
-	// Check whether xray is running every 30 seconds
-	s.cron.AddJob("@every 30s", job.NewCheckXrayRunningJob())
+	// Check whether xray is running every second
+	s.cron.AddJob("@every 1s", job.NewCheckXrayRunningJob())
 
 	// Check if xray needs to be restarted
 	s.cron.AddFunc("@every 10s", func() {
@@ -260,8 +260,8 @@ func (s *Server) startTask() {
 	// check client ips from log file every 10 sec
 	s.cron.AddJob("@every 10s", job.NewCheckClientIpJob())
 
-	// check client ips from log file every day
-	s.cron.AddJob("@daily", job.NewClearLogsJob())
+	// check client ips from log file every 3 days
+	s.cron.AddJob("@every 72h", job.NewClearLogsJob())
 
 	// Make a traffic condition every day, 8:30
 	var entry cron.EntryID

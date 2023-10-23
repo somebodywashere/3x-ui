@@ -462,9 +462,15 @@ func (t *Tgbot) asnwerCallback(callbackQuery *telego.CallbackQuery, isAdmin bool
 	case "client_traffic":
 		t.getClientUsage(chatId, callbackQuery.From.Username, strconv.FormatInt(callbackQuery.From.ID, 10))
 	case "client_commands":
-		t.SendMsgToTgbot(chatId, t.I18nBot("tgbot.commands.helpClientCommands"))
+		t.SendMsgToTgbot(callbackQuery.From.ID, t.I18nBot("tgbot.commands.helpClientCommands"))
+	case "onlines":
+		t.onlineClients(callbackQuery.From.ID)
 	case "commands":
-		t.SendMsgToTgbot(chatId, t.I18nBot("tgbot.commands.helpAdminCommands"))
+		t.SendMsgToTgbot(callbackQuery.From.ID, t.I18nBot("tgbot.commands.helpAdminCommands"))
+	default:
+		if callbackQuery.Data[:7] == "client_" {
+			t.searchClient(callbackQuery.From.ID, callbackQuery.Data[7:])
+		}
 	}
 }
 
@@ -489,6 +495,7 @@ func (t *Tgbot) SendAnswer(chatId int64, msg string, isAdmin bool) {
 		),
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton(t.I18nBot("tgbot.buttons.commands")).WithCallbackData(t.encodeQuery("commands")),
+			tu.InlineKeyboardButton(t.I18nBot("tgbot.buttons.onlines")).WithCallbackData(t.encodeQuery("onlines")),
 		),
 	)
 	numericKeyboardClient := tu.InlineKeyboard(
@@ -747,8 +754,19 @@ func (t *Tgbot) getClientUsage(chatId int64, tgUserName string, tgUserID string)
 			active = t.I18nBot("tgbot.messages.no")
 		}
 
+		status := t.I18nBot("offline")
+		if p.IsRunning() {
+			for _, online := range p.GetOnlineClients() {
+				if online == traffic.Email {
+					status = t.I18nBot("online")
+					break
+				}
+			}
+		}
+
 		output := ""
 		output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
+		output += t.I18nBot("tgbot.messages.online", "Status=="+status)
 		output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
 		if flag {
 			output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
@@ -887,8 +905,19 @@ func (t *Tgbot) searchClient(chatId int64, email string, messageID ...int) {
 		active = t.I18nBot("tgbot.messages.no")
 	}
 
+	status := t.I18nBot("offline")
+	if p.IsRunning() {
+		for _, online := range p.GetOnlineClients() {
+			if online == traffic.Email {
+				status = t.I18nBot("online")
+				break
+			}
+		}
+	}
+
 	output := ""
 	output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
+	output += t.I18nBot("tgbot.messages.online", "Status=="+status)
 	output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
 
 	if flag {
@@ -989,8 +1018,19 @@ func (t *Tgbot) searchInbound(chatId int64, remark string) {
 				active = t.I18nBot("tgbot.messages.no")
 			}
 
+			status := t.I18nBot("offline")
+			if p.IsRunning() {
+				for _, online := range p.GetOnlineClients() {
+					if online == traffic.Email {
+						status = t.I18nBot("online")
+						break
+					}
+				}
+			}
+
 			output := ""
 			output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
+			output += t.I18nBot("tgbot.messages.online", "Status=="+status)
 			output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
 
 			if flag {
@@ -1053,8 +1093,19 @@ func (t *Tgbot) searchForClient(chatId int64, query string) {
 		active = t.I18nBot("tgbot.messages.no")
 	}
 
+	status := t.I18nBot("offline")
+	if p.IsRunning() {
+		for _, online := range p.GetOnlineClients() {
+			if online == traffic.Email {
+				status = t.I18nBot("online")
+				break
+			}
+		}
+	}
+
 	output := ""
 	output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
+	output += t.I18nBot("tgbot.messages.online", "Status=="+status)
 	output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
 
 	if flag {
@@ -1178,7 +1229,18 @@ func (t *Tgbot) getExhausted() string {
 				active = t.I18nBot("tgbot.messages.no")
 			}
 
+			status := t.I18nBot("offline")
+			if p.IsRunning() {
+				for _, online := range p.GetOnlineClients() {
+					if online == traffic.Email {
+						status = t.I18nBot("online")
+						break
+					}
+				}
+			}
+
 			output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
+			output += t.I18nBot("tgbot.messages.online", "Status=="+status)
 			output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
 
 			if flag {
@@ -1196,6 +1258,25 @@ func (t *Tgbot) getExhausted() string {
 	}
 
 	return output
+}
+
+func (t *Tgbot) onlineClients(chatId int64) {
+	if !p.IsRunning() {
+		return
+	}
+
+	onlines := p.GetOnlineClients()
+	output := t.I18nBot("tgbot.messages.onlinesCount", "Count=="+fmt.Sprint(len(onlines)))
+	if len(onlines) > 0 {
+		keyboard := tu.InlineKeyboard()
+		for index, online := range onlines {
+			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, tu.InlineKeyboardRow(
+				tu.InlineKeyboardButton(fmt.Sprintf("%d: %s\r\n", index+1, online)).WithCallbackData(t.encodeQuery("client_"+online))))
+		}
+		t.SendMsgToTgbot(chatId, output, keyboard)
+	} else {
+		t.SendMsgToTgbot(chatId, output)
+	}
 }
 
 func (t *Tgbot) sendBackup(chatId int64) {

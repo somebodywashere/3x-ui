@@ -63,6 +63,12 @@
                                     </template>
                                     <a-tag color="orange" v-if="total.expiring.length">[[ total.expiring.length ]]</a-tag>
                                 </a-popover>
+                                <a-popover title='onlines' :overlay-class-name="themeSwitcher.darkClass">
+                                    <template slot="content">
+                                        <p v-for="clientEmail in onlineClients">[[ clientEmail ]]</p>
+                                    </template>
+                                    <a-tag color="blue" v-if="onlineClients.length">[[ onlineClients.length ]]</a-tag>
+                                </a-popover>
                             </a-col>
                         </a-row>
                     </a-card>
@@ -337,6 +343,7 @@
     const innerColumns = [
         { title: '{{ i18n "pages.inbounds.operate" }}', width: 70, scopedSlots: { customRender: 'actions' } },
         { title: '{{ i18n "pages.inbounds.enable" }}', width: 40, scopedSlots: { customRender: 'enable' } },
+        { title: 'Online', width: 20, scopedSlots: { customRender: 'online' } },
         { title: '{{ i18n "pages.inbounds.client" }}', width: 80, scopedSlots: { customRender: 'client' } },
         { title: '{{ i18n "pages.inbounds.traffic" }}', width: 50, scopedSlots: { customRender: 'traffic' } },
         { title: '{{ i18n "pages.inbounds.expireDate" }}', width: 50, scopedSlots: { customRender: 'expiryTime' } },
@@ -370,6 +377,7 @@
             defaultCert: '',
             defaultKey: '',
             clientCount: [],
+            onlineClients: [],
             isRefreshEnabled: localStorage.getItem("isRefreshEnabled") === "true" ? true : false,
             refreshing: false,
             refreshInterval: Number(localStorage.getItem("refreshInterval")) || 5000,
@@ -396,9 +404,17 @@
                     return;
                 }
                 this.setInbounds(msg.obj);
+                this.getOnlineUsers();
                 setTimeout(() => {
                     this.refreshing = false;
                 }, 500);
+            },
+            async getOnlineUsers() {
+                const msg = await HttpUtil.post('/xui/inbound/onlines');
+                if (!msg.success) {
+                    return;
+                }
+                this.onlineClients = msg.obj != null ? msg.obj : [];
             },
             async getDefaultSettings() {
                 const msg = await HttpUtil.post('/panel/setting/defaultSettings');
@@ -932,6 +948,9 @@
             isClientEnabled(dbInbound, email) {
                 clientStats = dbInbound.clientStats ? dbInbound.clientStats.find(stats => stats.email === email) : null
                 return clientStats ? clientStats['enable'] : true
+            },
+            isClientOnline(email) {
+                return this.onlineClients.includes(email);
             },
             isRemovable(dbInboundId) {
                 return this.getInboundClients(this.dbInbounds.find(row => row.id === dbInboundId)).length > 1

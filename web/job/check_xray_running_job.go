@@ -1,7 +1,9 @@
 package job
 
-import "x-ui/web/service"
-import "x-ui/logger"
+import (
+	"x-ui/logger"
+	"x-ui/web/service"
+)
 
 type CheckXrayRunningJob struct {
 	xrayService service.XrayService
@@ -16,14 +18,14 @@ func NewCheckXrayRunningJob() *CheckXrayRunningJob {
 func (j *CheckXrayRunningJob) Run() {
 	if j.xrayService.IsXrayRunning() {
 		j.checkTime = 0
-		return
-	}
-	j.checkTime++
-	if j.checkTime < 2 {
-		return
-	}
-	err := j.xrayService.RestartXray(false)
+	} else {
+		j.checkTime++
+		//only restart if it's down for 2 seconds in a row
+		if j.checkTime > 1 {
+			err := j.xrayService.RestartXray(false)
 			if err != nil {
 				logger.Error("Restart xray failed:", err)
 			}
+		}
+	}
 }

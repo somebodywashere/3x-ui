@@ -338,12 +338,12 @@ func (t *Tgbot) asnwerCallback(callbackQuery *telego.CallbackQuery, isAdmin bool
 								return
 							}
 
-							if traffic.ExpiryTime-time.Now().Unix()*1000 < 0 {
-								traffic.ExpiryTime = 0
-							}
-
 							if traffic.ExpiryTime > 0 {
-								date = traffic.ExpiryTime + int64(days*24*60*60000)
+								if traffic.ExpiryTime-time.Now().Unix()*1000 < 0 {
+									date = -int64(days * 24 * 60 * 60000)
+								} else {
+									date = traffic.ExpiryTime + int64(days*24*60*60000)
+								}
 							} else {
 								date = traffic.ExpiryTime - int64(days*24*60*60000)
 							}

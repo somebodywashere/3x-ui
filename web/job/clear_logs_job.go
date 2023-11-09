@@ -19,7 +19,7 @@ func (j *ClearLogsJob) Run() {
 
 	// clear old previous logs
 	for i := 0; i < len(logFilesPrev); i++ {
-		if err := os.Truncate(logFiles[i], 0); err != nil {
+		if err := os.Truncate(logFilesPrev[i], 0); err != nil {
 			logger.Warning("clear logs job err:", err)
 		}
 	}

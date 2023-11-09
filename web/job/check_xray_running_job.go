@@ -22,7 +22,8 @@ func (j *CheckXrayRunningJob) Run() {
 		j.checkTime++
 		//only restart if it's down for 2 seconds in a row
 		if j.checkTime > 1 {
-			err := j.xrayService.RestartXray(false)
+			err := j.xrayService.RestartXray(true)
+			j.checkTime = 0
 			if err != nil {
 				logger.Error("Restart xray failed:", err)
 			}

@@ -451,6 +451,16 @@ func (t *Tgbot) asnwerCallback(callbackQuery *telego.CallbackQuery, isAdmin bool
 					t.sendCallbackAnswerTgBot(callbackQuery.ID, t.I18nBot("tgbot.answers.errorOperation"))
 				}
 			case "toggle_enable":
+				inlineKeyboard := tu.InlineKeyboard(
+					tu.InlineKeyboardRow(
+						tu.InlineKeyboardButton(t.I18nBot("tgbot.buttons.cancel")).WithCallbackData(t.encodeQuery("client_cancel "+email)),
+					),
+					tu.InlineKeyboardRow(
+						tu.InlineKeyboardButton(t.I18nBot("tgbot.buttons.confirmToggle")).WithCallbackData(t.encodeQuery("toggle_enable_c "+email)),
+					),
+				)
+				t.editMessageCallbackTgBot(chatId, callbackQuery.Message.MessageID, inlineKeyboard)
+			case "toggle_enable_c":
 				enabled, err := t.inboundService.ToggleClientEnableByEmail(email)
 				if err == nil {
 					t.xrayService.SetToNeedRestart()
@@ -652,9 +662,11 @@ func (t *Tgbot) getServerUsage() string {
 
 	// get latest status of server
 	t.lastStatus = t.serverService.GetStatus(t.lastStatus)
+	onlines := p.GetOnlineClients()
 	info += t.I18nBot("tgbot.messages.serverUpTime", "UpTime=="+strconv.FormatUint(t.lastStatus.Uptime/86400, 10), "Unit=="+t.I18nBot("tgbot.days"))
 	info += t.I18nBot("tgbot.messages.serverLoad", "Load1=="+strconv.FormatFloat(t.lastStatus.Loads[0], 'f', 2, 64), "Load2=="+strconv.FormatFloat(t.lastStatus.Loads[1], 'f', 2, 64), "Load3=="+strconv.FormatFloat(t.lastStatus.Loads[2], 'f', 2, 64))
 	info += t.I18nBot("tgbot.messages.serverMemory", "Current=="+common.FormatTraffic(int64(t.lastStatus.Mem.Current)), "Total=="+common.FormatTraffic(int64(t.lastStatus.Mem.Total)))
+	info += t.I18nBot("tgbot.messages.onlinesCount", "Count=="+fmt.Sprint(len(onlines)))
 	info += t.I18nBot("tgbot.messages.tcpCount", "Count=="+strconv.Itoa(t.lastStatus.TcpCount))
 	info += t.I18nBot("tgbot.messages.udpCount", "Count=="+strconv.Itoa(t.lastStatus.UdpCount))
 	info += t.I18nBot("tgbot.messages.traffic", "Total=="+common.FormatTraffic(int64(t.lastStatus.NetTraffic.Sent+t.lastStatus.NetTraffic.Recv)), "Upload=="+common.FormatTraffic(int64(t.lastStatus.NetTraffic.Sent)), "Download=="+common.FormatTraffic(int64(t.lastStatus.NetTraffic.Recv)))
@@ -716,6 +728,77 @@ func (t *Tgbot) getInboundUsages() string {
 	return info
 }
 
+func (t *Tgbot) clientInfoMsg(traffic *xray.ClientTraffic) string {
+
+	now := time.Now().Unix()
+	expiryTime := ""
+	flag := false
+	diff := traffic.ExpiryTime/1000 - now
+	if traffic.ExpiryTime == 0 {
+		expiryTime = t.I18nBot("tgbot.unlimited")
+	} else if diff > 172800 || !traffic.Enable {
+		expiryTime = time.Unix((traffic.ExpiryTime / 1000), 0).Format("2006-01-02 15:04:05")
+	} else if traffic.ExpiryTime < 0 {
+		expiryTime = fmt.Sprintf("%d %s", traffic.ExpiryTime/-86400000, t.I18nBot("tgbot.days"))
+		flag = true
+	} else {
+		expiryTime = fmt.Sprintf("%d %s", diff/3600, t.I18nBot("tgbot.hours"))
+		flag = true
+	}
+
+	total := ""
+	if traffic.Total == 0 {
+		total = t.I18nBot("tgbot.unlimited")
+	} else {
+		total = common.FormatTraffic((traffic.Total))
+	}
+
+	enabled := ""
+	isEnabled, err := t.inboundService.checkIsEnabledByEmail(traffic.Email)
+	if err != nil {
+		logger.Warning(err)
+		enabled = t.I18nBot("tgbot.wentWrong")
+	} else if isEnabled {
+		enabled = t.I18nBot("tgbot.messages.yes")
+	} else {
+		enabled = t.I18nBot("tgbot.messages.no")
+	}
+
+	active := ""
+	if traffic.Enable {
+		active = t.I18nBot("tgbot.messages.yes")
+	} else {
+		active = t.I18nBot("tgbot.messages.no")
+	}
+
+	status := t.I18nBot("tgbot.offline")
+	if p.IsRunning() {
+		for _, online := range p.GetOnlineClients() {
+			if online == traffic.Email {
+				status = t.I18nBot("tgbot.online")
+				break
+			}
+		}
+	}
+
+	output := ""
+	output += t.I18nBot("tgbot.messages.enabled", "Enable=="+enabled)
+	output += t.I18nBot("tgbot.messages.online", "Status=="+status)
+	output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
+	output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
+	if flag {
+		output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
+	} else {
+		output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
+	}
+	output += t.I18nBot("tgbot.messages.upload", "Upload=="+common.FormatTraffic(traffic.Up))
+	output += t.I18nBot("tgbot.messages.download", "Download=="+common.FormatTraffic(traffic.Down))
+	output += t.I18nBot("tgbot.messages.total", "UpDown=="+common.FormatTraffic((traffic.Up+traffic.Down)), "Total=="+total)
+	output += t.I18nBot("tgbot.messages.refreshedOn", "Time=="+time.Now().Format("2006-01-02 15:04:05"))
+
+	return output
+}
+
 func (t *Tgbot) getClientUsage(chatId int64, tgUserName string, tgUserID string) {
 	traffics, err := t.inboundService.GetClientTrafficTgBot(tgUserID)
 	if err != nil {
@@ -745,61 +828,8 @@ func (t *Tgbot) getClientUsage(chatId int64, tgUserName string, tgUserID string)
 		return
 	}
 
-	now := time.Now().Unix()
 	for _, traffic := range traffics {
-		expiryTime := ""
-		flag := false
-		diff := traffic.ExpiryTime/1000 - now
-		if traffic.ExpiryTime == 0 {
-			expiryTime = t.I18nBot("tgbot.unlimited")
-		} else if diff > 172800 || !traffic.Enable {
-			expiryTime = time.Unix((traffic.ExpiryTime / 1000), 0).Format("2006-01-02 15:04:05")
-		} else if traffic.ExpiryTime < 0 {
-			expiryTime = fmt.Sprintf("%d %s", traffic.ExpiryTime/-86400000, t.I18nBot("tgbot.days"))
-			flag = true
-		} else {
-			expiryTime = fmt.Sprintf("%d %s", diff/3600, t.I18nBot("tgbot.hours"))
-			flag = true
-		}
-
-		total := ""
-		if traffic.Total == 0 {
-			total = t.I18nBot("tgbot.unlimited")
-		} else {
-			total = common.FormatTraffic((traffic.Total))
-		}
-
-		active := ""
-		if traffic.Enable {
-			active = t.I18nBot("tgbot.messages.yes")
-		} else {
-			active = t.I18nBot("tgbot.messages.no")
-		}
-
-		status := t.I18nBot("tgbot.offline")
-		if p.IsRunning() {
-			for _, online := range p.GetOnlineClients() {
-				if online == traffic.Email {
-					status = t.I18nBot("tgbot.online")
-					break
-				}
-			}
-		}
-
-		output := ""
-		output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
-		output += t.I18nBot("tgbot.messages.online", "Status=="+status)
-		output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
-		if flag {
-			output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
-		} else {
-			output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
-		}
-		output += t.I18nBot("tgbot.messages.upload", "Upload=="+common.FormatTraffic(traffic.Up))
-		output += t.I18nBot("tgbot.messages.download", "Download=="+common.FormatTraffic(traffic.Down))
-		output += t.I18nBot("tgbot.messages.total", "UpDown=="+common.FormatTraffic((traffic.Up+traffic.Down)), "Total=="+total)
-		output += t.I18nBot("tgbot.messages.refreshedOn", "Time=="+time.Now().Format("2006-01-02 15:04:05"))
-
+		output := t.clientInfoMsg(traffic)
 		t.SendMsgToTgbot(chatId, output)
 	}
 	t.SendAnswer(chatId, t.I18nBot("tgbot.commands.pleaseChoose"), false)
@@ -897,61 +927,7 @@ func (t *Tgbot) searchClient(chatId int64, email string, messageID ...int) {
 		return
 	}
 
-	now := time.Now().Unix()
-	expiryTime := ""
-	flag := false
-	diff := traffic.ExpiryTime/1000 - now
-	if traffic.ExpiryTime == 0 {
-		expiryTime = t.I18nBot("tgbot.unlimited")
-	} else if diff > 172800 || !traffic.Enable {
-		expiryTime = time.Unix((traffic.ExpiryTime / 1000), 0).Format("2006-01-02 15:04:05")
-	} else if traffic.ExpiryTime < 0 {
-		expiryTime = fmt.Sprintf("%d %s", traffic.ExpiryTime/-86400000, t.I18nBot("tgbot.days"))
-		flag = true
-	} else {
-		expiryTime = fmt.Sprintf("%d %s", diff/3600, t.I18nBot("tgbot.hours"))
-		flag = true
-	}
-
-	total := ""
-	if traffic.Total == 0 {
-		total = t.I18nBot("tgbot.unlimited")
-	} else {
-		total = common.FormatTraffic((traffic.Total))
-	}
-
-	active := ""
-	if traffic.Enable {
-		active = t.I18nBot("tgbot.messages.yes")
-	} else {
-		active = t.I18nBot("tgbot.messages.no")
-	}
-
-	status := t.I18nBot("tgbot.offline")
-	if p.IsRunning() {
-		for _, online := range p.GetOnlineClients() {
-			if online == traffic.Email {
-				status = t.I18nBot("tgbot.online")
-				break
-			}
-		}
-	}
-
-	output := ""
-	output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
-	output += t.I18nBot("tgbot.messages.online", "Status=="+status)
-	output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
-
-	if flag {
-		output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
-	} else {
-		output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
-	}
-
-	output += t.I18nBot("tgbot.messages.upload", "Upload=="+common.FormatTraffic(traffic.Up))
-	output += t.I18nBot("tgbot.messages.download", "Download=="+common.FormatTraffic(traffic.Down))
-	output += t.I18nBot("tgbot.messages.total", "UpDown=="+common.FormatTraffic((traffic.Up+traffic.Down)), "Total=="+total)
-	output += t.I18nBot("tgbot.messages.refreshedOn", "Time=="+time.Now().Format("2006-01-02 15:04:05"))
+	output := t.clientInfoMsg(traffic)
 
 	inlineKeyboard := tu.InlineKeyboard(
 		tu.InlineKeyboardRow(
@@ -996,7 +972,6 @@ func (t *Tgbot) searchInbound(chatId int64, remark string) {
 		return
 	}
 
-	now := time.Now().Unix()
 	for _, inbound := range inbouds {
 		info := ""
 		info += t.I18nBot("tgbot.messages.inbound", "Remark=="+inbound.Remark)
@@ -1011,61 +986,8 @@ func (t *Tgbot) searchInbound(chatId int64, remark string) {
 		t.SendMsgToTgbot(chatId, info)
 
 		for _, traffic := range inbound.ClientStats {
-			expiryTime := ""
-			flag := false
-			diff := traffic.ExpiryTime/1000 - now
-			if traffic.ExpiryTime == 0 {
-				expiryTime = t.I18nBot("tgbot.unlimited")
-			} else if diff > 172800 || !traffic.Enable {
-				expiryTime = time.Unix((traffic.ExpiryTime / 1000), 0).Format("2006-01-02 15:04:05")
-			} else if traffic.ExpiryTime < 0 {
-				expiryTime = fmt.Sprintf("%d %s", traffic.ExpiryTime/-86400000, t.I18nBot("tgbot.days"))
-				flag = true
-			} else {
-				expiryTime = fmt.Sprintf("%d %s", diff/3600, t.I18nBot("tgbot.hours"))
-				flag = true
-			}
 
-			total := ""
-			if traffic.Total == 0 {
-				total = t.I18nBot("tgbot.unlimited")
-			} else {
-				total = common.FormatTraffic((traffic.Total))
-			}
-
-			active := ""
-			if traffic.Enable {
-				active = t.I18nBot("tgbot.messages.yes")
-			} else {
-				active = t.I18nBot("tgbot.messages.no")
-			}
-
-			status := t.I18nBot("tgbot.offline")
-			if p.IsRunning() {
-				for _, online := range p.GetOnlineClients() {
-					if online == traffic.Email {
-						status = t.I18nBot("tgbot.online")
-						break
-					}
-				}
-			}
-
-			output := ""
-			output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
-			output += t.I18nBot("tgbot.messages.online", "Status=="+status)
-			output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
-
-			if flag {
-				output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
-			} else {
-				output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
-			}
-
-			output += t.I18nBot("tgbot.messages.upload", "Upload=="+common.FormatTraffic(traffic.Up))
-			output += t.I18nBot("tgbot.messages.download", "Download=="+common.FormatTraffic(traffic.Down))
-			output += t.I18nBot("tgbot.messages.total", "UpDown=="+common.FormatTraffic((traffic.Up+traffic.Down)), "Total=="+total)
-			output += t.I18nBot("tgbot.messages.refreshedOn", "Time=="+time.Now().Format("2006-01-02 15:04:05"))
-
+			output := t.clientInfoMsg(&traffic)
 			t.SendMsgToTgbot(chatId, output)
 		}
 	}
@@ -1085,61 +1007,7 @@ func (t *Tgbot) searchForClient(chatId int64, query string) {
 		return
 	}
 
-	now := time.Now().Unix()
-	expiryTime := ""
-	flag := false
-	diff := traffic.ExpiryTime/1000 - now
-	if traffic.ExpiryTime == 0 {
-		expiryTime = t.I18nBot("tgbot.unlimited")
-	} else if diff > 172800 || !traffic.Enable {
-		expiryTime = time.Unix((traffic.ExpiryTime / 1000), 0).Format("2006-01-02 15:04:05")
-	} else if traffic.ExpiryTime < 0 {
-		expiryTime = fmt.Sprintf("%d %s", traffic.ExpiryTime/-86400000, t.I18nBot("tgbot.days"))
-		flag = true
-	} else {
-		expiryTime = fmt.Sprintf("%d %s", diff/3600, t.I18nBot("tgbot.hours"))
-		flag = true
-	}
-
-	total := ""
-	if traffic.Total == 0 {
-		total = t.I18nBot("tgbot.unlimited")
-	} else {
-		total = common.FormatTraffic((traffic.Total))
-	}
-
-	active := ""
-	if traffic.Enable {
-		active = t.I18nBot("tgbot.messages.yes")
-	} else {
-		active = t.I18nBot("tgbot.messages.no")
-	}
-
-	status := t.I18nBot("tgbot.offline")
-	if p.IsRunning() {
-		for _, online := range p.GetOnlineClients() {
-			if online == traffic.Email {
-				status = t.I18nBot("tgbot.online")
-				break
-			}
-		}
-	}
-
-	output := ""
-	output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
-	output += t.I18nBot("tgbot.messages.online", "Status=="+status)
-	output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
-
-	if flag {
-		output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
-	} else {
-		output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
-	}
-
-	output += t.I18nBot("tgbot.messages.upload", "Upload=="+common.FormatTraffic(traffic.Up))
-	output += t.I18nBot("tgbot.messages.download", "Download=="+common.FormatTraffic(traffic.Down))
-	output += t.I18nBot("tgbot.messages.total", "UpDown=="+common.FormatTraffic((traffic.Up+traffic.Down)), "Total=="+total)
-	output += t.I18nBot("tgbot.messages.refreshedOn", "Time=="+time.Now().Format("2006-01-02 15:04:05"))
+	output := t.clientInfoMsg(traffic)
 
 	t.SendMsgToTgbot(chatId, output)
 }
@@ -1222,59 +1090,7 @@ func (t *Tgbot) getExhausted() string {
 		output += t.I18nBot("tgbot.messages.depletedMsg", "Type=="+t.I18nBot("tgbot.clients"))
 
 		for _, traffic := range exhaustedClients {
-			expiryTime := ""
-			flag := false
-			diff := (traffic.ExpiryTime - now) / 1000
-			if traffic.ExpiryTime == 0 {
-				expiryTime = t.I18nBot("tgbot.unlimited")
-			} else if diff > 172800 || !traffic.Enable {
-				expiryTime = time.Unix((traffic.ExpiryTime / 1000), 0).Format("2006-01-02 15:04:05")
-			} else if traffic.ExpiryTime < 0 {
-				expiryTime = fmt.Sprintf("%d %s", traffic.ExpiryTime/-86400000, t.I18nBot("tgbot.days"))
-				flag = true
-			} else {
-				expiryTime = fmt.Sprintf("%d %s", diff/3600, t.I18nBot("tgbot.hours"))
-				flag = true
-			}
-
-			total := ""
-			if traffic.Total == 0 {
-				total = t.I18nBot("tgbot.unlimited")
-			} else {
-				total = common.FormatTraffic((traffic.Total))
-			}
-
-			active := ""
-			if traffic.Enable {
-				active = t.I18nBot("tgbot.messages.yes")
-			} else {
-				active = t.I18nBot("tgbot.messages.no")
-			}
-
-			status := t.I18nBot("tgbot.offline")
-			if p.IsRunning() {
-				for _, online := range p.GetOnlineClients() {
-					if online == traffic.Email {
-						status = t.I18nBot("tgbot.online")
-						break
-					}
-				}
-			}
-
-			output += t.I18nBot("tgbot.messages.active", "Enable=="+active)
-			output += t.I18nBot("tgbot.messages.online", "Status=="+status)
-			output += t.I18nBot("tgbot.messages.email", "Email=="+traffic.Email)
-
-			if flag {
-				output += t.I18nBot("tgbot.messages.expireIn", "Time=="+expiryTime)
-			} else {
-				output += t.I18nBot("tgbot.messages.expire", "Time=="+expiryTime)
-			}
-
-			output += t.I18nBot("tgbot.messages.upload", "Upload=="+common.FormatTraffic(traffic.Up))
-			output += t.I18nBot("tgbot.messages.download", "Download=="+common.FormatTraffic(traffic.Down))
-			output += t.I18nBot("tgbot.messages.total", "UpDown=="+common.FormatTraffic((traffic.Up+traffic.Down)), "Total=="+total)
-			output += t.I18nBot("tgbot.messages.refreshedOn", "Time=="+time.Now().Format("2006-01-02 15:04:05"))
+			output := t.clientInfoMsg(&traffic)
 			output += "\r\n \r\n"
 		}
 	}

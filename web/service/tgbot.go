@@ -1090,7 +1090,7 @@ func (t *Tgbot) getExhausted() string {
 		output += t.I18nBot("tgbot.messages.depletedMsg", "Type=="+t.I18nBot("tgbot.clients"))
 
 		for _, traffic := range exhaustedClients {
-			output := t.clientInfoMsg(&traffic)
+			output += t.clientInfoMsg(&traffic)
 			output += "\r\n \r\n"
 		}
 	}

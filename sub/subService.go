@@ -147,20 +147,20 @@ func (s *SubService) getRemoteSubsBySubId(subId string) string {
 		resp, err := client.Get(url)
 		if err != nil {
 			logger.Error("SubService - Unable to get remote sub")
-			break
+			continue
 		}
 		body, err := io.ReadAll(resp.Body)
 		defer resp.Body.Close()
 		if err != nil {
 			logger.Error("SubService - Unable to read remote sub")
-			break
+			continue
 		}
 		if resp.StatusCode == 200 {
 			if subEncrypt {
 				encoded, err := base64.StdEncoding.DecodeString(string(body))
 				if err != nil {
 					logger.Error("Remote Sub Decode Error:", err)
-					break
+					continue
 				}
 				result += string(encoded)
 			} else {

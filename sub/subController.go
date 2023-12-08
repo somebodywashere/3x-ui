@@ -3,7 +3,6 @@ package sub
 import (
 	"encoding/base64"
 	"strings"
-	"x-ui/logger"
 	"x-ui/web/service"
 
 	"github.com/gin-gonic/gin"
@@ -50,7 +49,6 @@ func (a *SUBController) subs(c *gin.Context) {
 		}
 
 		if subEncrypt {
-			logger.Debug(result)
 			result = base64.StdEncoding.EncodeToString([]byte(result))
 		}
 		// Add headers

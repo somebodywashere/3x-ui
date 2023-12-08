@@ -263,7 +263,6 @@ func (j *CheckClientIpJob) updateInboundClientIps(inboundClientIps *model.Inboun
 			}
 		}
 	}
-	logger.Debug("disAllowedIps ", disAllowedIps)
 	sort.Strings(disAllowedIps)
 
 	db := database.GetDB()

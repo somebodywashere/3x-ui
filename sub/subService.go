@@ -3,6 +3,8 @@ package sub
 import (
 	"encoding/base64"
 	"fmt"
+	"io"
+	"net/http"
 	"net/url"
 	"strings"
 	"time"
@@ -20,7 +22,7 @@ type SubService struct {
 	address        string
 	showInfo       bool
 	inboundService service.InboundService
-	settingServics service.SettingService
+	settingService service.SettingService
 }
 
 func (s *SubService) GetSubs(subId string, host string, showInfo bool) ([]string, []string, error) {
@@ -87,7 +89,7 @@ func (s *SubService) GetSubs(subId string, host string, showInfo bool) ([]string
 		}
 	}
 	headers = append(headers, fmt.Sprintf("upload=%d; download=%d; total=%d; expire=%d", traffic.Up, traffic.Down, traffic.Total, traffic.ExpiryTime/1000))
-	updateInterval, _ := s.settingServics.GetSubUpdates()
+	updateInterval, _ := s.settingService.GetSubUpdates()
 	headers = append(headers, fmt.Sprintf("%d", updateInterval))
 	headers = append(headers, subId)
 	return result, headers, nil
@@ -101,6 +103,62 @@ func (s *SubService) getInboundsBySubId(subId string) ([]*model.Inbound, error) 
 		return nil, err
 	}
 	return inbounds, nil
+}
+
+func (s *SubService) getRemoteSubsBySubId(subId string) string {
+	result := ""
+	remoteServers, _ := s.settingService.GetSubRemoteServers()
+	servers := strings.Split(remoteServers, ",")
+
+	certFile, err := s.settingService.GetSubCertFile()
+	if err != nil {
+		logger.Error("SubService - Unable to get Cert File")
+	}
+	keyFile, err := s.settingService.GetSubKeyFile()
+	if err != nil {
+		logger.Error("SubService - Unable to get Key File")
+	}
+
+	prefix := ""
+	if certFile != "" || keyFile != "" {
+		prefix = "https://"
+	} else {
+		prefix = "http://"
+	}
+
+	port, err := s.settingService.GetSubPort()
+	if err != nil {
+		logger.Error("SubService - Unable to get port")
+	}
+
+	subPath, err := s.settingService.GetSubPath()
+	if err != nil {
+		logger.Error("SubService - Unable to get Sub Path")
+	}
+
+	client := http.Client{
+		Timeout: 3 * time.Second,
+	}
+
+	for _, server := range servers {
+		url := fmt.Sprintf("%s%s:%d%s%s", prefix, server, port, subPath, subId)
+		logger.Debug("Try Get: " + url)
+		resp, err := client.Get(url)
+		if err != nil {
+			logger.Error("SubService - Unable to get remote sub")
+			break
+		}
+		body, err := io.ReadAll(resp.Body)
+		defer resp.Body.Close()
+		if err != nil {
+			logger.Error("SubService - Unable to read remote sub")
+			break
+		}
+		if resp.StatusCode == 200 {
+			result = fmt.Sprint(body)
+		}
+	}
+	return result
 }
 
 func (s *SubService) getClientTraffics(traffics []xray.ClientTraffic, email string) xray.ClientTraffic {

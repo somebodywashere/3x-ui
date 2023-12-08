@@ -210,6 +210,8 @@ class AllSetting {
         this.subUpdates = 0;
         this.subEncrypt = true;
         this.subShowInfo = true;
+        this.subRemoteEnable = false;
+        this.subRemoteServers = "";
 
         this.timeLocation = "Asia/Tehran";
 

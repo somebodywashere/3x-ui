@@ -54,6 +54,8 @@ var defaultValueMap = map[string]string{
 	"subUpdates":         "12",
 	"subEncrypt":         "true",
 	"subShowInfo":        "true",
+	"subRemoteEnable":    "false",
+	"subRemoteServers":   "",
 }
 
 type SettingService struct {
@@ -405,6 +407,14 @@ func (s *SettingService) GetSubEncrypt() (bool, error) {
 
 func (s *SettingService) GetSubShowInfo() (bool, error) {
 	return s.getBool("subShowInfo")
+}
+
+func (s *SettingService) GetSubRemoteEnable() (bool, error) {
+	return s.getBool("subRemoteEnable")
+}
+
+func (s *SettingService) GetSubRemoteServers() (string, error) {
+	return s.getString("subRemoteServers")
 }
 
 func (s *SettingService) GetPageSize() (int, error) {

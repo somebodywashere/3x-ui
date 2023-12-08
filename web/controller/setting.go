@@ -68,20 +68,21 @@ func (a *SettingController) getDefaultSettings(c *gin.Context) {
 	type settingFunc func() (interface{}, error)
 
 	settings := map[string]settingFunc{
-		"expireDiff":  func() (interface{}, error) { return a.settingService.GetExpireDiff() },
-		"trafficDiff": func() (interface{}, error) { return a.settingService.GetTrafficDiff() },
-		"defaultCert": func() (interface{}, error) { return a.settingService.GetCertFile() },
-		"defaultKey":  func() (interface{}, error) { return a.settingService.GetKeyFile() },
-		"tgBotEnable": func() (interface{}, error) { return a.settingService.GetTgbotenabled() },
-		"subEnable":   func() (interface{}, error) { return a.settingService.GetSubEnable() },
-		"subPort":     func() (interface{}, error) { return a.settingService.GetSubPort() },
-		"subPath":     func() (interface{}, error) { return a.settingService.GetSubPath() },
-		"subDomain":   func() (interface{}, error) { return a.settingService.GetSubDomain() },
-		"subKeyFile":  func() (interface{}, error) { return a.settingService.GetSubKeyFile() },
-		"subCertFile": func() (interface{}, error) { return a.settingService.GetSubCertFile() },
-		"subEncrypt":  func() (interface{}, error) { return a.settingService.GetSubEncrypt() },
-		"subShowInfo": func() (interface{}, error) { return a.settingService.GetSubShowInfo() },
-		"pageSize":    func() (interface{}, error) { return a.settingService.GetPageSize() },
+		"expireDiff":      func() (interface{}, error) { return a.settingService.GetExpireDiff() },
+		"trafficDiff":     func() (interface{}, error) { return a.settingService.GetTrafficDiff() },
+		"defaultCert":     func() (interface{}, error) { return a.settingService.GetCertFile() },
+		"defaultKey":      func() (interface{}, error) { return a.settingService.GetKeyFile() },
+		"tgBotEnable":     func() (interface{}, error) { return a.settingService.GetTgbotenabled() },
+		"subEnable":       func() (interface{}, error) { return a.settingService.GetSubEnable() },
+		"subPort":         func() (interface{}, error) { return a.settingService.GetSubPort() },
+		"subPath":         func() (interface{}, error) { return a.settingService.GetSubPath() },
+		"subDomain":       func() (interface{}, error) { return a.settingService.GetSubDomain() },
+		"subKeyFile":      func() (interface{}, error) { return a.settingService.GetSubKeyFile() },
+		"subCertFile":     func() (interface{}, error) { return a.settingService.GetSubCertFile() },
+		"subEncrypt":      func() (interface{}, error) { return a.settingService.GetSubEncrypt() },
+		"subShowInfo":     func() (interface{}, error) { return a.settingService.GetSubShowInfo() },
+		"subRemoteEnable": func() (interface{}, error) { return a.settingService.GetSubRemoteEnable() },
+		"pageSize":        func() (interface{}, error) { return a.settingService.GetPageSize() },
 	}
 
 	result := make(map[string]interface{})

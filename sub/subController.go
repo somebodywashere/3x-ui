@@ -3,6 +3,7 @@ package sub
 import (
 	"encoding/base64"
 	"strings"
+	"x-ui/logger"
 	"x-ui/web/service"
 
 	"github.com/gin-gonic/gin"
@@ -44,12 +45,13 @@ func (a *SUBController) subs(c *gin.Context) {
 			result += sub + "\n"
 		}
 
-		if subEncrypt {
-			result = base64.StdEncoding.EncodeToString([]byte(result))
-		}
-
 		if rSubs != "" && subRemoteEnabled {
 			result += rSubs
+		}
+
+		if subEncrypt {
+			logger.Debug(result)
+			result = base64.StdEncoding.EncodeToString([]byte(result))
 		}
 		// Add headers
 		c.Writer.Header().Set("Subscription-Userinfo", headers[0])

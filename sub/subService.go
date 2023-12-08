@@ -109,6 +109,7 @@ func (s *SubService) getRemoteSubsBySubId(subId string) string {
 	result := ""
 	remoteServers, _ := s.settingService.GetSubRemoteServers()
 	servers := strings.Split(remoteServers, ",")
+	subEncrypt, _ := s.settingService.GetSubEncrypt()
 
 	certFile, err := s.settingService.GetSubCertFile()
 	if err != nil {
@@ -155,7 +156,16 @@ func (s *SubService) getRemoteSubsBySubId(subId string) string {
 			break
 		}
 		if resp.StatusCode == 200 {
-			result += string(body)
+			if subEncrypt {
+				encoded, err := base64.StdEncoding.DecodeString(string(body))
+				if err != nil {
+					logger.Error("Remote Sub Decode Error:", err)
+					break
+				}
+				result += string(encoded)
+			} else {
+				result += string(body)
+			}
 		}
 	}
 	return result

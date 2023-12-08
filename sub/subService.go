@@ -155,7 +155,7 @@ func (s *SubService) getRemoteSubsBySubId(subId string) string {
 			break
 		}
 		if resp.StatusCode == 200 {
-			result = fmt.Sprint(body)
+			result += fmt.Sprint(body)
 		}
 	}
 	return result

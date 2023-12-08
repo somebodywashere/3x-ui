@@ -28,9 +28,14 @@ func (a *SUBController) initRouter(g *gin.RouterGroup) {
 func (a *SUBController) subs(c *gin.Context) {
 	subEncrypt, _ := a.settingService.GetSubEncrypt()
 	subShowInfo, _ := a.settingService.GetSubShowInfo()
+	subRemoteEnabled, _ := a.settingService.GetSubRemoteEnable()
 	subId := c.Param("subid")
 	host := strings.Split(c.Request.Host, ":")[0]
 	subs, headers, err := a.subService.GetSubs(subId, host, subShowInfo)
+	rSubs := ""
+	if subRemoteEnabled {
+		rSubs = a.subService.getRemoteSubsBySubId(subId)
+	}
 	if err != nil || len(subs) == 0 {
 		c.String(400, "Error!")
 	} else {
@@ -39,15 +44,19 @@ func (a *SUBController) subs(c *gin.Context) {
 			result += sub + "\n"
 		}
 
-		// Add headers
-		c.Writer.Header().Set("Subscription-Userinfo", headers[0])
-		c.Writer.Header().Set("Profile-Update-Interval", headers[1])
-		c.Writer.Header().Set("Profile-Title", headers[2])
-
 		if subEncrypt {
 			c.String(200, base64.StdEncoding.EncodeToString([]byte(result)))
 		} else {
 			c.String(200, result)
 		}
+
+		if rSubs != "" && subRemoteEnabled {
+			result += rSubs
+		}
+		// Add headers
+		c.Writer.Header().Set("Subscription-Userinfo", headers[0])
+		c.Writer.Header().Set("Profile-Update-Interval", headers[1])
+		c.Writer.Header().Set("Profile-Title", headers[2])
+
 	}
 }

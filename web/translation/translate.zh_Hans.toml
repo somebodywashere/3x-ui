@@ -262,6 +262,7 @@
 "timeZone" = "时区"
 "timeZoneDesc" = "定时任务按照该时区的时间运行"
 "subSettings" = "订阅"
+"subMultiserverSettings" = "Multi-server Subscription"
 "subEnable" = "启用服务"
 "subEnableDesc" = "具有单独配置的订阅功能"
 "subListen" = "监听IP"
@@ -282,6 +283,10 @@
 "subEncryptDesc" = "在订阅中加密返回的配置"
 "subShowInfo" = "显示使用信息"
 "subShowInfoDesc" = "在配置名称后显示剩余流量和日期"
+"subRemoteEnable" = "Enable Multi-server subscription service"
+"subRemoteEnableDesc" = "This feature will add subscriptions with same Subscription ID from another servers"
+"subRemoteServers" = "Addresses of other servers"
+"subRemoteServersDesc" = "Ports, Subscription paths and Encryption should be the same as it is on the main configuration. Servers should be separated with ',' comma. Example: sub.server1.com,sub2.server4.net"
 
 [pages.settings.templates]
 "title" = "模板"

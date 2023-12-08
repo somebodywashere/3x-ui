@@ -262,6 +262,7 @@
 "timeZone" = "Часовой пояс"
 "timeZoneDesc" = "Запланированные задачи выполняются в соответствии со временем в этом часовом поясе"
 "subSettings" = "Подписка"
+"subMultiserverSettings" = "Multi-server Subscription"
 "subEnable" = "Включить службу"
 "subEnableDesc" = "Функция подписки с отдельной конфигурацией"
 "subListen" = "Прослушивание IP"
@@ -282,6 +283,10 @@
 "subEncryptDesc" = "Шифровать возвращенные конфиги в подписке"
 "subShowInfo" = "Показать информацию об использовании"
 "subShowInfoDesc" = "Показывать восстановленный трафик и дату после имени конфигурации"
+"subRemoteEnable" = "Enable Multi-server subscription service"
+"subRemoteEnableDesc" = "This feature will add subscriptions with same Subscription ID from another servers"
+"subRemoteServers" = "Addresses of other servers"
+"subRemoteServersDesc" = "Ports, Subscription paths and Encryption should be the same as it is on the main configuration. Servers should be separated with ',' comma. Example: sub.server1.com,sub2.server4.net"
 
 [pages.settings.templates]
 "title" = "Шаблоны"

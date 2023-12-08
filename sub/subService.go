@@ -137,7 +137,7 @@ func (s *SubService) getRemoteSubsBySubId(subId string) string {
 	}
 
 	client := http.Client{
-		Timeout: 3 * time.Second,
+		Timeout: 1 * time.Second,
 	}
 
 	for _, server := range servers {

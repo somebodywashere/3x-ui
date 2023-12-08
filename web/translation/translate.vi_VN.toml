@@ -257,6 +257,7 @@
 "timeZone" = "Múi giờ"
 "timeZoneDesc" = "Các tác vụ được lên lịch chạy theo thời gian trong múi giờ này."
 "subSettings" = "Đăng ký"
+"subMultiserverSettings" = "Multi-server Subscription"
 "subEnable" = "Bật dịch vụ"
 "subEnableDesc" = "Tính năng đăng ký với cấu hình riêng"
 "subListen" = "Listening IP"
@@ -277,6 +278,10 @@
 "subEncryptDesc" = "Mã hóa các cấu hình được trả về trong đăng ký"
 "subShowInfo" = "Hiển thị thông tin sử dụng"
 "subShowInfoDesc" = "Hiển thị lưu lượng truy cập còn lại và ngày sau tên cấu hình"
+"subRemoteEnable" = "Enable Multi-server subscription service"
+"subRemoteEnableDesc" = "This feature will add subscriptions with same Subscription ID from another servers"
+"subRemoteServers" = "Addresses of other servers"
+"subRemoteServersDesc" = "Ports, Subscription paths and Encryption should be the same as it is on the main configuration. Servers should be separated with ',' comma. Example: sub.server1.com,sub2.server4.net"
 
 [pages.settings.templates]
 "title" = "Mẫu"

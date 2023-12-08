@@ -262,6 +262,7 @@
 "timeZone" = "Time zone"
 "timeZoneDesc" = "Scheduled tasks run according to the time in this time zone."
 "subSettings" = "Subscription"
+"subMultiserverSettings" = "Multi-server Subscription"
 "subEnable" = "Enable service"
 "subEnableDesc" = "Subscription feature with separate configuration"
 "subListen" = "Listening IP"
@@ -282,6 +283,10 @@
 "subEncryptDesc" = "Encrypt the returned configs in subscription"
 "subShowInfo" = "Show usage info"
 "subShowInfoDesc" = "Show remianed traffic and date after config name"
+"subRemoteEnable" = "Enable Multi-server subscription service"
+"subRemoteEnableDesc" = "This feature will add subscriptions with same Subscription ID from another servers"
+"subRemoteServers" = "Addresses of other servers"
+"subRemoteServersDesc" = "Ports, Subscription paths and Encryption should be the same as it is on the main configuration. Servers should be separated with ',' comma. Example: sub.server1.com,sub2.server4.net"
 
 [pages.settings.templates]
 "title" = "Templates"

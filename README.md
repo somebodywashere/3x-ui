@@ -285,9 +285,10 @@ If you want to use routing to WARP before v2.1.0 follow steps as below:
   
   ```sh
     "log": {
-    "loglevel": "warning",
     "access": "./access.log",
-    "error": "./error.log"
+    "dnsLog": false,
+    "error": "./error.log",
+    "loglevel": "warning"
     },
   ```
 

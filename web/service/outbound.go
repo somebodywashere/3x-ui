@@ -9,9 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type OutboundService struct {
-	xrayApi xray.XrayAPI
-}
+type OutboundService struct{}
 
 func (s *OutboundService) AddTraffic(traffics []*xray.Traffic, clientTraffics []*xray.ClientTraffic) (error, bool) {
 	var err error

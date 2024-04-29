@@ -1171,14 +1171,19 @@ install_iplimit() {
     # Launching fail2ban
     if ! systemctl is-active --quiet fail2ban; then
         systemctl start fail2ban
-        systemctl enable fail2ban
     else
         systemctl restart fail2ban
     fi
     systemctl enable fail2ban
 
-    echo -e "${green}IP Limit installed and configured successfully!${plain}\n"
-    before_show_menu
+    echo -e "${yellow}\nCheck if everything is ok...${plain}\n"
+    sleep 2
+    if ! systemctl status fail2ban | grep ERROR; then
+        echo -e "${green}IP Limit installed and configured successfully!${plain}\n"
+        before_show_menu
+    else
+        echo -e "${red}\nIP Limit installed but something went wrong! Check fail2ban's status above and fix manually.${plain}\n"
+    fi
 }
 
 remove_iplimit() {

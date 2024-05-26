@@ -1003,8 +1003,8 @@ backend=auto
 filter=3x-ipl
 action=3x-ipl
 logpath=${iplimit_log_path}
-maxretry=2
-findtime=32
+maxretry=4
+findtime=65
 bantime=${bantime}m
 EOF
 

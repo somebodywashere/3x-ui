@@ -770,7 +770,10 @@ func (t *Tgbot) asnwerCallback(callbackQuery *telego.CallbackQuery, isAdmin bool
 	switch callbackQuery.Data {
 	case "get_usage":
 		t.sendCallbackAnswerTgBot(callbackQuery.ID, t.I18nBot("tgbot.buttons.serverUsage"))
-		t.SendMsgToTgbot(chatId, t.getServerUsage())
+		t.getServerUsage(chatId)
+	case "usage_refresh":
+		t.sendCallbackAnswerTgBot(callbackQuery.ID, t.I18nBot("tgbot.answers.successfulOperation"))
+		t.getServerUsage(chatId, callbackQuery.Message.GetMessageID())
 	case "inbounds":
 		t.sendCallbackAnswerTgBot(callbackQuery.ID, t.I18nBot("tgbot.buttons.getInbounds"))
 		t.SendMsgToTgbot(chatId, t.getInboundUsages())
@@ -916,7 +919,7 @@ func (t *Tgbot) SendReport() {
 		t.SendMsgToTgbotAdmins(msg)
 	}
 
-	info := t.getServerUsage()
+	info := t.sendServerUsage()
 	t.SendMsgToTgbotAdmins(info)
 
 	t.sendExhaustedToAdmins()
@@ -946,10 +949,37 @@ func (t *Tgbot) sendExhaustedToAdmins() {
 	}
 }
 
-func (t *Tgbot) getServerUsage() string {
+func (t *Tgbot) getServerUsage(chatId int64, messageID ...int) string {
+	info := t.prepareServerUsageInfo()
+
+	keyboard := tu.InlineKeyboard(tu.InlineKeyboardRow(
+		tu.InlineKeyboardButton(t.I18nBot("tgbot.buttons.refresh")).WithCallbackData(t.encodeQuery("usage_refresh"))))
+
+	if len(messageID) > 0 {
+		t.editMessageTgBot(chatId, messageID[0], info, keyboard)
+	} else {
+		t.SendMsgToTgbot(chatId, info, keyboard)
+	}
+
+	return info
+}
+
+// Send server usage without an inline keyborad
+func (t *Tgbot) sendServerUsage() string {
+	info := t.prepareServerUsageInfo()
+	return info
+}
+
+func (t *Tgbot) prepareServerUsageInfo() string {
 	info, ipv4, ipv6 := "", "", ""
+
+	// get latest status of server
+	t.lastStatus = t.serverService.GetStatus(t.lastStatus)
+	onlines := p.GetOnlineClients()
+
 	info += t.I18nBot("tgbot.messages.hostname", "Hostname=="+hostname)
 	info += t.I18nBot("tgbot.messages.version", "Version=="+config.GetVersion())
+	info += t.I18nBot("tgbot.messages.xrayVersion", "XrayVersion=="+fmt.Sprint(t.lastStatus.Xray.Version))
 
 	// get ip address
 	netInterfaces, err := net.Interfaces()
@@ -978,9 +1008,6 @@ func (t *Tgbot) getServerUsage() string {
 		info += t.I18nBot("tgbot.messages.ipv6", "IPv6=="+ipv6)
 	}
 
-	// get latest status of server
-	t.lastStatus = t.serverService.GetStatus(t.lastStatus)
-	onlines := p.GetOnlineClients()
 	info += t.I18nBot("tgbot.messages.serverUpTime", "UpTime=="+strconv.FormatUint(t.lastStatus.Uptime/86400, 10), "Unit=="+t.I18nBot("tgbot.days"))
 	info += t.I18nBot("tgbot.messages.serverLoad", "Load1=="+strconv.FormatFloat(t.lastStatus.Loads[0], 'f', 2, 64), "Load2=="+strconv.FormatFloat(t.lastStatus.Loads[1], 'f', 2, 64), "Load3=="+strconv.FormatFloat(t.lastStatus.Loads[2], 'f', 2, 64))
 	info += t.I18nBot("tgbot.messages.serverMemory", "Current=="+common.FormatTraffic(int64(t.lastStatus.Mem.Current)), "Total=="+common.FormatTraffic(int64(t.lastStatus.Mem.Total)))

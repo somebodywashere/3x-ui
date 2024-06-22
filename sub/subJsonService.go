@@ -211,7 +211,7 @@ func (s *SubJsonService) streamData(stream string) map[string]interface{} {
 	delete(streamSettings, "sockopt")
 
 	if s.fragment != "" {
-		streamSettings["sockopt"] = json_util.RawMessage(`{"dialerProxy": "fragment", "tcpKeepAliveIdle": 100, "tcpNoDelay": true}`)
+		streamSettings["sockopt"] = json_util.RawMessage(`{"dialerProxy": "fragment", "tcpKeepAliveIdle": 100, "tcpMptcp": true, "tcpNoDelay": true}`)
 	}
 
 	// remove proxy protocol
@@ -224,7 +224,6 @@ func (s *SubJsonService) streamData(stream string) map[string]interface{} {
 	case "httpupgrade":
 		streamSettings["httpupgradeSettings"] = s.removeAcceptProxy(streamSettings["httpupgradeSettings"])
 	}
-
 	return streamSettings
 }
 

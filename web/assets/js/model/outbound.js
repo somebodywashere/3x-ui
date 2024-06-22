@@ -194,7 +194,7 @@ class WsStreamSettings extends CommonClass {
     static fromJson(json={}) {
         return new WsStreamSettings(
             json.path,
-            json.host
+            json.host,
         );
     }
 
@@ -202,7 +202,6 @@ class WsStreamSettings extends CommonClass {
         return {
             path: this.path,
             host: this.host,
-            headers: ObjectUtil.isEmpty(this.host) ? undefined : {Host: this.host},
         };
     }
 }
@@ -258,22 +257,22 @@ class QuicStreamSettings extends CommonClass {
 }
 
 class GrpcStreamSettings extends CommonClass {
-    constructor(serviceName="", multiMode=false, authority="") {
+    constructor(serviceName="", authority="", multiMode=false) {
         super();
         this.serviceName = serviceName;
-        this.multiMode = multiMode;
         this.authority = authority;
+        this.multiMode = multiMode;
     }
 
     static fromJson(json={}) {
-        return new GrpcStreamSettings(json.serviceName, json.multiMode,json.authority);
+        return new GrpcStreamSettings(json.serviceName, json.authority, json.multiMode );
     }
 
     toJson() {
         return {
             serviceName: this.serviceName,
-            multiMode: this.multiMode,
-            authority: this.authority
+            authority: this.authority,
+            multiMode: this.multiMode
         }
     }
 }
@@ -288,7 +287,7 @@ class HttpUpgradeStreamSettings extends CommonClass {
     static fromJson(json={}) {
         return new HttpUpgradeStreamSettings(
             json.path,
-            json.host
+            json.host,
         );
     }
 
@@ -296,7 +295,28 @@ class HttpUpgradeStreamSettings extends CommonClass {
         return {
             path: this.path,
             host: this.host,
-            headers: ObjectUtil.isEmpty(this.host) ? undefined : {Host: this.host},
+        };
+    }
+}
+
+class SplitHTTPStreamSettings extends CommonClass {
+    constructor(path='/', host='') {
+        super();
+        this.path = path;
+        this.host = host;
+    }
+
+    static fromJson(json={}) {
+        return new SplitHTTPStreamSettings(
+            json.path,
+            json.host,
+        );
+    }
+
+    toJson() {
+        return {
+            path: this.path,
+            host: this.host,
         };
     }
 }
@@ -361,11 +381,12 @@ class RealityStreamSettings extends CommonClass {
     }
 };
 class SockoptStreamSettings extends CommonClass {
-    constructor(dialerProxy = "", tcpFastOpen = false, tcpKeepAliveInterval = 0, tcpNoDelay = false) {
+    constructor(dialerProxy = "", tcpFastOpen = false, tcpKeepAliveInterval = 0, tcpMptcp = false, tcpNoDelay = false) {
         super();
         this.dialerProxy = dialerProxy;
         this.tcpFastOpen = tcpFastOpen;
         this.tcpKeepAliveInterval = tcpKeepAliveInterval;
+        this.tcpMptcp = tcpMptcp;
         this.tcpNoDelay = tcpNoDelay;
     }
 
@@ -375,6 +396,7 @@ class SockoptStreamSettings extends CommonClass {
             json.dialerProxy,
             json.tcpFastOpen,
             json.tcpKeepAliveInterval,
+            json.tcpMptcp,
             json.tcpNoDelay,
         );
     }
@@ -384,6 +406,7 @@ class SockoptStreamSettings extends CommonClass {
             dialerProxy: this.dialerProxy,
             tcpFastOpen: this.tcpFastOpen,
             tcpKeepAliveInterval: this.tcpKeepAliveInterval,
+            tcpMptcp: this.tcpMptcp,
             tcpNoDelay: this.tcpNoDelay,
         };
     }
@@ -401,6 +424,7 @@ class StreamSettings extends CommonClass {
                 quicSettings=new QuicStreamSettings(),
                 grpcSettings=new GrpcStreamSettings(),
                 httpupgradeSettings=new HttpUpgradeStreamSettings(),
+                splithttpSettings=new SplitHTTPStreamSettings(),
                 sockopt = undefined,
                 ) {
         super();
@@ -415,6 +439,7 @@ class StreamSettings extends CommonClass {
         this.quic = quicSettings;
         this.grpc = grpcSettings;
         this.httpupgrade = httpupgradeSettings;
+        this.splithttp = splithttpSettings;
         this.sockopt = sockopt;
     }
     
@@ -447,6 +472,7 @@ class StreamSettings extends CommonClass {
             QuicStreamSettings.fromJson(json.quicSettings),
             GrpcStreamSettings.fromJson(json.grpcSettings),
             HttpUpgradeStreamSettings.fromJson(json.httpupgradeSettings),
+            SplitHTTPStreamSettings.fromJson(json.splithttpSettings),
             SockoptStreamSettings.fromJson(json.sockopt),
         );
     }
@@ -465,6 +491,7 @@ class StreamSettings extends CommonClass {
             quicSettings: network === 'quic' ? this.quic.toJson() : undefined,
             grpcSettings: network === 'grpc' ? this.grpc.toJson() : undefined,
             httpupgradeSettings: network === 'httpupgrade' ? this.httpupgrade.toJson() : undefined,
+            splithttpSettings: network === 'splithttp' ? this.splithttp.toJson() : undefined,
             sockopt: this.sockopt != undefined ? this.sockopt.toJson() : undefined,
         };
     }
@@ -529,7 +556,7 @@ class Outbound extends CommonClass {
 
     canEnableTls() {
         if (![Protocols.VMess, Protocols.VLESS, Protocols.Trojan, Protocols.Shadowsocks].includes(this.protocol)) return false;
-        return ["tcp", "ws", "http", "quic", "grpc", "httpupgrade"].includes(this.stream.network);
+        return ["tcp", "ws", "http", "quic", "grpc", "httpupgrade" , "splithttp"].includes(this.stream.network);
     }
 
     //this is used for xtls-rprx-vision
@@ -650,6 +677,8 @@ class Outbound extends CommonClass {
             stream.grpc = new GrpcStreamSettings(json.path, json.authority, json.type == 'multi');
         } else if (network === 'httpupgrade') {
             stream.httpupgrade = new HttpUpgradeStreamSettings(json.path,json.host);
+        } else if (network === 'splithttp') {
+            stream.splithttp = new SplitHTTPStreamSettings(json.path,json.host);
         }
 
         if(json.tls && json.tls == 'tls'){
@@ -697,6 +726,8 @@ class Outbound extends CommonClass {
                 url.searchParams.get('mode') == 'multi');
         } else if (type === 'httpupgrade') {
             stream.httpupgrade = new HttpUpgradeStreamSettings(path,host);
+        } else if (type === 'splithttp') {
+            stream.splithttp = new SplitHTTPStreamSettings(path,host);
         }
 
         if(security == 'tls'){
@@ -947,13 +978,14 @@ Outbound.TrojanSettings = class extends CommonClass {
     }
 };
 Outbound.ShadowsocksSettings = class extends CommonClass {
-    constructor(address, port, password, method, uot) {
+    constructor(address, port, password, method, uot, UoTVersion) {
         super();
         this.address = address;
         this.port = port;
         this.password = password;
         this.method = method;
         this.uot = uot;
+        this.UoTVersion = UoTVersion;
     }
 
     static fromJson(json={}) {
@@ -965,6 +997,7 @@ Outbound.ShadowsocksSettings = class extends CommonClass {
             servers[0].password,
             servers[0].method,
             servers[0].uot,
+            servers[0].UoTVersion,
         );
     }
 
@@ -976,6 +1009,7 @@ Outbound.ShadowsocksSettings = class extends CommonClass {
                 password: this.password,
                 method: this.method,
                 uot: this.uot,
+                UoTVersion: this.UoTVersion,
             }],
         };
     }

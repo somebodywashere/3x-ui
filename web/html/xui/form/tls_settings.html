@@ -59,6 +59,12 @@
     <a-form-item label="Reject Unknown SNI">
       <a-switch v-model="inbound.stream.tls.rejectUnknownSni"></a-switch>
     </a-form-item>
+    <a-form-item label="Disable System Root">
+      <a-switch v-model="inbound.stream.tls.settings.disableSystemRoot"></a-switch>
+    </a-form-item>
+    <a-form-item label="Session Resumption">
+      <a-switch v-model="inbound.stream.tls.settings.enableSessionResumption"></a-switch>
+    </a-form-item>
     <template v-for="cert,index in inbound.stream.tls.certs">
       <a-form-item label='{{ i18n "certificate" }}'>
         <a-radio-group v-model="cert.useFile" button-style="solid">
@@ -89,6 +95,14 @@
       </template>
       <a-form-item label='OCSP stapling'>
         <a-input-number v-model.number="cert.ocspStapling" :min="0"></a-input-number>
+      </a-form-item>
+      <a-form-item label="One Time Loading">
+        <a-switch v-model="cert.oneTimeLoading"></a-switch>
+      </a-form-item>
+      <a-form-item label='Usage Option'>
+        <a-select v-model="cert.usage" style="width: 50%" :dropdown-class-name="themeSwitcher.currentTheme">
+          <a-select-option v-for="key in USAGE_OPTION" :value="key">[[ key ]]</a-select-option>
+        </a-select>
       </a-form-item>
     </template>
   </template>
@@ -134,6 +148,17 @@
           <a-input type="textarea" :rows="3" v-model="cert.key"></a-input>
         </a-form-item>
       </template>
+      <a-form-item label='OCSP stapling'>
+        <a-input-number v-model.number="cert.ocspStapling" :min="0"></a-input-number>
+      </a-form-item>
+      <a-form-item label="One Time Loading">
+        <a-switch v-model="cert.oneTimeLoading"></a-switch>
+      </a-form-item>
+      <a-form-item label='Usage Option'>
+        <a-select v-model="cert.usage" style="width: 50%" :dropdown-class-name="themeSwitcher.currentTheme">
+          <a-select-option v-for="key in USAGE_OPTION" :value="key">[[ key ]]</a-select-option>
+        </a-select>
+      </a-form-item>
     </template>
   </template>
 

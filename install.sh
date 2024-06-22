@@ -49,6 +49,8 @@ elif [[ "${release}" == "manjaro" ]]; then
     echo "Your OS is Manjaro"
 elif [[ "${release}" == "armbian" ]]; then
     echo "Your OS is Armbian"
+elif [[ "${release}" == "opensuse-tumbleweed" ]]; then
+    echo "Your OS is OpenSUSE Tumbleweed"
 elif [[ "${release}" == "centos" ]]; then
     if [[ ${os_version} -lt 8 ]]; then
         echo -e "${red} Please use CentOS 8 or higher ${plain}\n" && exit 1
@@ -91,12 +93,16 @@ else
     echo "- AlmaLinux 9+"
     echo "- Rocky Linux 9+"
     echo "- Oracle Linux 8+"
+    echo "- OpenSUSE Tumbleweed"
     exit 1
 
 fi
 
 install_base() {
     case "${release}" in
+    ubuntu | debian | armbian)
+        apt-get update && apt-get install -y -q wget curl tar tzdata
+        ;;
     centos | almalinux | rocky | oracle)
         yum -y update && yum install -y -q wget curl tar tzdata
         ;;
@@ -105,6 +111,9 @@ install_base() {
         ;;
     arch | manjaro | parch)
         pacman -Syu && pacman -Syu --noconfirm wget curl tar tzdata
+        ;;
+    opensuse-tumbleweed)
+        zypper refresh && zypper -q install -y wget curl tar timezone
         ;;
     *)
         apt-get update && apt install -y -q wget curl tar tzdata
@@ -117,31 +126,37 @@ config_after_install() {
     echo -e "${yellow}Install/update finished! For security it's recommended to modify panel settings ${plain}"
     read -p "Do you want to continue with the modification [y/n]?": config_confirm
     if [[ "${config_confirm}" == "y" || "${config_confirm}" == "Y" ]]; then
-        read -p "Please set up your username:" config_account
-        echo -e "${yellow}Your username will be:${config_account}${plain}"
-        read -p "Please set up your password:" config_password
-        echo -e "${yellow}Your password will be:${config_password}${plain}"
-        read -p "Please set up the panel port:" config_port
-        echo -e "${yellow}Your panel port is:${config_port}${plain}"
+        read -p "Please set up your username: " config_account
+        echo -e "${yellow}Your username will be: ${config_account}${plain}"
+        read -p "Please set up your password: " config_password
+        echo -e "${yellow}Your password will be: ${config_password}${plain}"
+        read -p "Please set up the panel port: " config_port
+        echo -e "${yellow}Your panel port is: ${config_port}${plain}"
+        read -p "Please set up the web base path (ip:port/webbasepath/): " config_webBasePath
+        echo -e "${yellow}Your web base path is: ${config_webBasePath}${plain}"
         echo -e "${yellow}Initializing, please wait...${plain}"
         /usr/local/x-ui/x-ui setting -username ${config_account} -password ${config_password}
         echo -e "${yellow}Account name and password set successfully!${plain}"
         /usr/local/x-ui/x-ui setting -port ${config_port}
         echo -e "${yellow}Panel port set successfully!${plain}"
+        /usr/local/x-ui/x-ui setting -webBasePath ${config_webBasePath}
+        echo -e "${yellow}Web base path set successfully!${plain}"
     else
-        echo -e "${red}cancel...${plain}"
+        echo -e "${red}Cancel...${plain}"
         if [[ ! -f "/etc/x-ui/x-ui.db" ]]; then
             local usernameTemp=$(head -c 6 /dev/urandom | base64)
             local passwordTemp=$(head -c 6 /dev/urandom | base64)
-            /usr/local/x-ui/x-ui setting -username ${usernameTemp} -password ${passwordTemp}
-            echo -e "this is a fresh installation,will generate random login info for security concerns:"
+            local webBasePathTemp=$(head -c 6 /dev/urandom | base64)
+            /usr/local/x-ui/x-ui setting -username ${usernameTemp} -password ${passwordTemp} -webBasePath ${webBasePathTemp}
+            echo -e "This is a fresh installation, will generate random login info for security concerns:"
             echo -e "###############################################"
-            echo -e "${green}username:${usernameTemp}${plain}"
-            echo -e "${green}password:${passwordTemp}${plain}"
+            echo -e "${green}Username: ${usernameTemp}${plain}"
+            echo -e "${green}Password: ${passwordTemp}${plain}"
+            echo -e "${green}WebBasePath: ${webBasePathTemp}${plain}"
             echo -e "###############################################"
-            echo -e "${red}if you forgot your login info,you can type x-ui and then type 8 to check after installation${plain}"
+            echo -e "${red}If you forgot your login info, you can type x-ui and then type 8 to check after installation${plain}"
         else
-            echo -e "${red} this is your upgrade,will keep old settings,if you forgot your login info,you can type x-ui and then type 8 to check${plain}"
+            echo -e "${red}This is your upgrade, will keep old settings. If you forgot your login info, you can type x-ui and then type 8 to check${plain}"
         fi
     fi
     /usr/local/x-ui/x-ui migrate

@@ -74,19 +74,21 @@
         </a-form-item>
         <a-form-item>
           <template slot="label">
-            <a-tooltip>
-              <template slot="title">
-                <span>{{ i18n "reset" }}</span>
-              </template>
-              {{ i18n "pages.xray.wireguard.secretKey" }}
-              <a-icon type="sync" @click="[outbound.settings.pubKey, outbound.settings.secretKey] = Object.values(Wireguard.generateKeypair())"></a-icon>
-            </a-tooltip>
+              <a-tooltip>
+                  <template slot="title">
+                      <span>{{ i18n "reset" }}</span>
+                  </template>
+                  {{ i18n "pages.xray.wireguard.secretKey" }}
+                  <a-icon type="sync"
+                      @click="[outbound.settings.pubKey, outbound.settings.secretKey] = Object.values(Wireguard.generateKeypair())">
+                  </a-icon>
+              </a-tooltip>
           </template>
           <a-input v-model.trim="outbound.settings.secretKey"></a-input>
-        </a-form-item>
-        <a-form-item label='{{ i18n "pages.xray.wireguard.publicKey" }}'>
+      </a-form-item>
+      <a-form-item label='{{ i18n "pages.xray.wireguard.publicKey" }}'>
           <a-input disabled v-model="outbound.settings.pubKey"></a-input>
-        </a-form-item>
+      </a-form-item>
         <a-form-item label='{{ i18n "pages.xray.wireguard.domainStrategy" }}'>
           <a-select v-model="outbound.settings.domainStrategy" :dropdown-class-name="themeSwitcher.currentTheme">
             <a-select-option v-for="wds in ['', ...WireguardDomainStrategy]" :value="wds">[[ wds ]]</a-select-option>
@@ -199,6 +201,9 @@
           <a-form-item label='UDP over TCP'>
             <a-switch v-model="outbound.settings.uot"></a-switch>
           </a-form-item>
+          <a-form-item label='UoTVersion'>
+            <a-input-number v-model.number="outbound.settings.UoTVersion" :min="1" :max="2"></a-input-number>
+          </a-form-item>
         </template>
       </template>
 
@@ -213,6 +218,7 @@
             <a-select-option value="quic">QUIC</a-select-option>
             <a-select-option value="grpc">gRPC</a-select-option>
             <a-select-option value="httpupgrade">HTTPUpgrade</a-select-option>
+            <a-select-option value="splithttp">SplitHTTP</a-select-option>
           </a-select>
         </a-form-item>
         <template v-if="outbound.stream.network === 'tcp'">
@@ -334,6 +340,16 @@
             <a-input v-model.trim="outbound.stream.httpupgrade.path"></a-input>
           </a-form-item>
         </template>
+
+        <!-- splithttp -->
+        <template v-if="outbound.stream.network === 'splithttp'">
+          <a-form-item label='{{ i18n "host" }}'>
+            <a-input v-model="outbound.stream.splithttp.host"></a-input>
+          </a-form-item>
+          <a-form-item label='{{ i18n "path" }}'>
+            <a-input v-model.trim="outbound.stream.splithttp.path"></a-input>
+          </a-form-item>
+        </template>
       </template>
 
       <!-- tls settings -->
@@ -403,6 +419,9 @@
         <a-form-item label="Keep Alive Interval">
           <a-input-number v-model="outbound.stream.sockopt.tcpKeepAliveInterval" :min="0"></a-input-number>
         </a-form-item>
+        <a-form-item label="Multipath TCP">
+          <a-switch v-model.trim="outbound.stream.sockopt.tcpMptcp"></a-switch>
+      </a-form-item>
         <a-form-item label="TCP No-Delay">
           <a-switch v-model="outbound.stream.sockopt.tcpNoDelay"></a-switch>
         </a-form-item>

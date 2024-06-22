@@ -40,10 +40,14 @@ os_version=$(grep -i version_id /etc/os-release | cut -d \" -f2 | cut -d . -f1)
 
 if [[ "${release}" == "arch" ]]; then
     echo "Your OS is Arch Linux"
+elif [[ "${release}" == "parch" ]]; then
+    echo "Your OS is Parch linux"
 elif [[ "${release}" == "manjaro" ]]; then
     echo "Your OS is Manjaro"
 elif [[ "${release}" == "armbian" ]]; then
     echo "Your OS is Armbian"
+elif [[ "${release}" == "opensuse-tumbleweed" ]]; then
+    echo "Your OS is OpenSUSE Tumbleweed"
 elif [[ "${release}" == "centos" ]]; then
     if [[ ${os_version} -lt 8 ]]; then
         echo -e "${red} Please use CentOS 8 or higher ${plain}\n" && exit 1
@@ -80,11 +84,13 @@ else
     echo "- CentOS 8+"
     echo "- Fedora 36+"
     echo "- Arch Linux"
+    echo "- Parch Linux"
     echo "- Manjaro"
     echo "- Armbian"
     echo "- AlmaLinux 9+"
     echo "- Rocky Linux 9+"
     echo "- Oracle Linux 8+"
+    echo "- OpenSUSE Tumbleweed"
     exit 1
 
 fi
@@ -812,7 +818,7 @@ ssl_cert_issue() {
     # NOTE:This should be handled by user
     # open the port and kill the occupied progress
     ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
-    ~/.acme.sh/acme.sh --issue -d ${domain} --standalone --httpport ${WebPort}
+    ~/.acme.sh/acme.sh --issue -d ${domain} --listen-v6 --standalone --httpport ${WebPort}
     if [ $? -ne 0 ]; then
         LOGE "issue certs failed,please check logs"
         rm -rf ~/.acme.sh/${domain}
@@ -1062,8 +1068,9 @@ iplimit_main() {
     echo -e "${green}\t2.${plain} Change Ban Duration"
     echo -e "${green}\t3.${plain} Unban Everyone"
     echo -e "${green}\t4.${plain} Check Logs"
-    echo -e "${green}\t5.${plain} fail2ban status"
-    echo -e "${green}\t6.${plain} Uninstall IP Limit"
+    echo -e "${green}\t5.${plain} Fail2ban Status"
+    echo -e "${green}\t6.${plain} Restart Fail2ban"
+    echo -e "${green}\t7.${plain} Uninstall IP Limit"
     echo -e "${green}\t0.${plain} Back to Main Menu"
     read -p "Choose an option: " choice
     case "$choice" in
@@ -1106,8 +1113,10 @@ iplimit_main() {
     5)
         service fail2ban status
         ;;
-
     6)
+        systemctl restart fail2ban
+        ;;
+    7)
         remove_iplimit
         ;;
     *) echo "Invalid choice" ;;
@@ -1120,7 +1129,14 @@ install_iplimit() {
 
         # Check the OS and install necessary packages
         case "${release}" in
-        ubuntu | debian | armbian)
+        ubuntu)
+            if [[ "${os_version}" -ge 24 ]]; then
+                apt update && apt install python3-pip -y
+                python3 -m pip install pyasynchat --break-system-packages
+            fi
+            apt update && apt install fail2ban -y
+            ;;
+        debian | armbian)
             apt update && apt install fail2ban -y
             ;;
         centos | almalinux | rocky | oracle)
@@ -1131,8 +1147,8 @@ install_iplimit() {
             dnf -y update && dnf -y install fail2ban
             ;;
         arch | manjaro | parch)
-        pacman -Syu --noconfirm fail2ban
-        ;;
+            pacman -Syu --noconfirm fail2ban
+            ;;
         *)
             echo -e "${red}Unsupported operating system. Please check the script and install the necessary packages manually.${plain}\n"
             exit 1

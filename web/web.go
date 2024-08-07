@@ -180,7 +180,7 @@ func (s *Server) initRouter() (*gin.Engine, error) {
 	assetsBasePath := basePath + "assets/"
 
 	store := cookie.NewStore(secret)
-	engine.Use(sessions.Sessions("session", store))
+	engine.Use(sessions.Sessions("3x-ui", store))
 	engine.Use(func(c *gin.Context) {
 		c.Set("base_path", basePath)
 	})
@@ -268,7 +268,7 @@ func (s *Server) startTask() {
 
 	// Make a traffic condition every day, 8:30
 	var entry cron.EntryID
-	isTgbotenabled, err := s.settingService.GetTgbotenabled()
+	isTgbotenabled, err := s.settingService.GetTgbotEnabled()
 	if (err == nil) && (isTgbotenabled) {
 		runtime, err := s.settingService.GetTgbotRuntime()
 		if err != nil || runtime == "" {
@@ -344,13 +344,13 @@ func (s *Server) Start() (err error) {
 			}
 			listener = network.NewAutoHttpsListener(listener)
 			listener = tls.NewListener(listener, c)
-			logger.Info("web server run https on", listener.Addr())
+			logger.Info("Web server running HTTPS on", listener.Addr())
 		} else {
-			logger.Error("error in loading certificates: ", err)
-			logger.Info("web server run http on", listener.Addr())
+			logger.Error("Error loading certificates:", err)
+			logger.Info("Web server running HTTP on", listener.Addr())
 		}
 	} else {
-		logger.Info("web server run http on", listener.Addr())
+		logger.Info("Web server running HTTP on", listener.Addr())
 	}
 	s.listener = listener
 
@@ -364,7 +364,7 @@ func (s *Server) Start() (err error) {
 
 	s.startTask()
 
-	isTgbotenabled, err := s.settingService.GetTgbotenabled()
+	isTgbotenabled, err := s.settingService.GetTgbotEnabled()
 	if (err == nil) && (isTgbotenabled) {
 		tgBot := s.tgbotService.NewTgbot()
 		tgBot.Start(i18nFS)

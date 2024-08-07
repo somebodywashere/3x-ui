@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	loginUser = "LOGIN_USER"
+	loginUser   = "LOGIN_USER"
+	defaultPath = "/"
 )
 
 func init() {
@@ -26,8 +27,9 @@ func SetLoginUser(c *gin.Context, user *model.User) error {
 func SetMaxAge(c *gin.Context, maxAge int) error {
 	s := sessions.Default(c)
 	s.Options(sessions.Options{
-		Path:   "/",
-		MaxAge: maxAge,
+		Path:     defaultPath,
+		MaxAge:   maxAge,
+		HttpOnly: true,
 	})
 	return s.Save()
 }
@@ -38,7 +40,10 @@ func GetLoginUser(c *gin.Context) *model.User {
 	if obj == nil {
 		return nil
 	}
-	user := obj.(model.User)
+	user, ok := obj.(model.User)
+	if !ok {
+		return nil
+	}
 	return &user
 }
 
@@ -46,12 +51,13 @@ func IsLogin(c *gin.Context) bool {
 	return GetLoginUser(c) != nil
 }
 
-func ClearSession(c *gin.Context) {
+func ClearSession(c *gin.Context) error {
 	s := sessions.Default(c)
 	s.Clear()
 	s.Options(sessions.Options{
-		Path:   "/",
-		MaxAge: -1,
+		Path:     defaultPath,
+		MaxAge:   -1,
+		HttpOnly: true,
 	})
-	s.Save()
+	return s.Save()
 }

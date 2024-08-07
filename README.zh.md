@@ -1,5 +1,3 @@
-# 3X-UI
-
 [English](/README.md) | [Chinese](/README.zh.md) | [Español](/README.es_ES.md)
 
 <p align="center"><a href="#"><img src="./media/3X-UI.png" alt="Image"></a></p>
@@ -16,9 +14,15 @@
 
 **如果此项目对你有用，请给一个**:star2:
 
-<p align="left"><a href="#"><img width="125" src="https://github.com/MHSanaei/3x-ui/assets/115543613/7aa895dd-048a-42e7-989b-afd41a74e2e1" alt="Image"></a></p>
+<p align="left">
+  <a href="https://buymeacoffee.com/mhsanaei" target="_blank">
+    <img src="./media/buymeacoffe.png" alt="Image">
+  </a>
+</p>
 
 - USDT (TRC20): `TXncxkvhkDWGts487Pjqq1qT9JmwRUz8CC`
+- MATIC (polygon): `0x41C9548675D044c6Bfb425786C765bc37427256A`
+- LTC (Litecoin): `ltc1q2ach7x6d2zq0n4l0t4zl7d7xe2s6fs7a3vspwv`
 
 ## 安装 & 升级
 
@@ -28,10 +32,10 @@ bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.
 
 ## 安装指定版本
 
-要安装所需的版本，请将该版本添加到安装命令的末尾。 e.g., ver `v2.3.6`:
+要安装所需的版本，请将该版本添加到安装命令的末尾。 e.g., ver `v2.3.12`:
 
 ```
-bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) v2.3.6
+bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) v2.3.12
 ```
 
 ## SSL 认证

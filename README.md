@@ -1,5 +1,3 @@
-# 3X-UI
-
 [English](/README.md) | [Chinese](/README.zh.md) | [Español](/README.es_ES.md)
 
 <p align="center"><a href="#"><img src="./media/3X-UI.png" alt="Image"></a></p>
@@ -16,9 +14,15 @@
 
 **If this project is helpful to you, you may wish to give it a**:star2:
 
-<p align="left"><a href="#"><img width="125" src="https://github.com/MHSanaei/3x-ui/assets/115543613/7aa895dd-048a-42e7-989b-afd41a74e2e1" alt="Image"></a></p>
+<p align="left">
+  <a href="https://buymeacoffee.com/mhsanaei" target="_blank">
+    <img src="./media/buymeacoffe.png" alt="Image">
+  </a>
+</p>
 
 - USDT (TRC20): `TXncxkvhkDWGts487Pjqq1qT9JmwRUz8CC`
+- MATIC (polygon): `0x41C9548675D044c6Bfb425786C765bc37427256A`
+- LTC (Litecoin): `ltc1q2ach7x6d2zq0n4l0t4zl7d7xe2s6fs7a3vspwv`
 
 ## Install & Upgrade
 
@@ -28,48 +32,59 @@ bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.
 
 ## Install Custom Version
 
-To install your desired version, add the version to the end of the installation command. e.g., ver `v2.3.6`:
+To install your desired version, add the version to the end of the installation command. e.g., ver `v2.3.12`:
 
 ```
-bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) v2.3.6
+bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) v2.3.12
 ```
 
 ## SSL Certificate
 
 <details>
-  <summary>Click for SSL Certificate</summary>
+  <summary>Click for SSL Certificate details</summary>
 
-### Cloudflare
+### ACME
 
-The Management script has a built-in SSL certificate application for Cloudflare. To use this script to apply for a certificate, you need the following:
+To manage SSL certificates using ACME:
 
-- Cloudflare registered email
-- Cloudflare Global API Key
-- The domain name has been resolved to the current server through cloudflare
+1. Ensure your domain is correctly resolved to the server.
+2. Run the `x-ui` command in the terminal, then choose `SSL Certificate Management`.
+3. You will be presented with the following options:
 
-How to get the Cloudflare Global API Key:
-
-1. Run the`x-ui`command on the terminal, then choose `Cloudflare SSL Certificate`.
-
-2. Visit the link https://dash.cloudflare.com/profile/api-tokens
-
-3. Click on View Global API Key (See the screenshot below)
-        ![](media/APIKey1.PNG)
-
-4. You may have to re-authenticate your account. After that, the API Key will be shown (See the screenshot below)\
-        ![](media/APIKey2.png)
-
-When using, just enter `domain name`, `email`, `API KEY`, the diagram is as follows:
-        ![](media/DetailEnter.png)
+   - **Get SSL:** Obtain SSL certificates.
+   - **Revoke:** Revoke existing SSL certificates.
+   - **Force Renew:** Force renewal of SSL certificates.
 
 ### Certbot
-```
+
+To install and use Certbot:
+
+```sh
 apt-get install certbot -y
 certbot certonly --standalone --agree-tos --register-unsafely-without-email -d yourdomain.com
 certbot renew --dry-run
 ```
 
-***Tip:*** *Certbot is also built into the Management script. You can run the `x-ui` command, then choose `SSL Certificate Management`.*
+### Cloudflare
+
+The management script includes a built-in SSL certificate application for Cloudflare. To use this script to apply for a certificate, you need the following:
+
+- Cloudflare registered email
+- Cloudflare Global API Key
+- The domain name must be resolved to the current server through Cloudflare
+
+**How to get the Cloudflare Global API Key:**
+
+1. Run the `x-ui` command in the terminal, then choose `Cloudflare SSL Certificate`.
+2. Visit the link: [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens).
+3. Click on "View Global API Key" (see the screenshot below):
+   ![](media/APIKey1.PNG)
+4. You may need to re-authenticate your account. After that, the API Key will be shown (see the screenshot below):
+   ![](media/APIKey2.png)
+
+When using, just enter your `domain name`, `email`, and `API KEY`. The diagram is as follows:
+   ![](media/DetailEnter.png)
+
 
 </details>
 
@@ -135,26 +150,26 @@ systemctl restart x-ui
 
 #### Usage
 
-1. Install Docker:
+1. **Install Docker:**
 
    ```sh
    bash <(curl -sSL https://get.docker.com)
    ```
 
-2. Clone the Project Repository:
+2. **Clone the Project Repository:**
 
    ```sh
    git clone https://github.com/MHSanaei/3x-ui.git
    cd 3x-ui
    ```
 
-3. Start the Service
+3. **Start the Service:**
 
    ```sh
    docker compose up -d
    ```
 
-   OR
+   **OR**
 
    ```sh
    docker run -itd \
@@ -167,22 +182,22 @@ systemctl restart x-ui
       ghcr.io/mhsanaei/3x-ui:latest
    ```
 
-update to latest version
+4. **Update to the Latest Version:**
 
    ```sh
-    cd 3x-ui
-    docker compose down
-    docker compose pull 3x-ui
-    docker compose up -d
+   cd 3x-ui
+   docker compose down
+   docker compose pull 3x-ui
+   docker compose up -d
    ```
 
-remove 3x-ui from docker 
+5. **Remove 3x-ui from Docker:**
 
    ```sh
-    docker stop 3x-ui
-    docker rm 3x-ui
-    cd --
-    rm -r 3x-ui
+   docker stop 3x-ui
+   docker rm 3x-ui
+   cd --
+   rm -r 3x-ui
    ```
 
 </details>
@@ -255,25 +270,45 @@ Our platform offers compatibility with a diverse range of architectures and devi
 - Supports export/import database from the panel
 
 
-## Default Settings
+## Default Panel Settings
 
 <details>
   <summary>Click for default settings details</summary>
 
-  ### Information
+### Username & Password & webbasepath:
 
-- **Port:** 2053
-- **Username & Password:** It will be generated randomly if you skip modifying.
+  These will be generated randomly if you skip modifying them.
+
+  - **Port:** the default port for panel is `2053`
+
+### Database Management:
+
+  You can conveniently perform database Backups and Restores directly from the panel.
+
 - **Database Path:**
-  - /etc/x-ui/x-ui.db
-- **Xray Config Path:**
-  - /usr/local/x-ui/bin/config.json
-- **Web Panel Path w/o Deploying SSL:**
-  - http://ip:2053/panel
-  - http://domain:2053/panel
-- **Web Panel Path w/ Deploying SSL:**
-  - https://domain:2053/panel
- 
+  - `/etc/x-ui/x-ui.db`
+
+
+### Web Base Path
+
+1. **Reset Web Base Path:**
+   - Open your terminal.
+   - Run the `x-ui` command.
+   - Select the option to `Reset Web Base Path`.
+
+2. **Generate or Customize Path:**
+   - The path will be randomly generated, or you can enter a custom path.
+
+3. **View Current Settings:**
+   - To view your current settings, use the `x-ui settings` command in the terminal or `View Current Settings` in `x-ui`
+
+### Security Recommendation:
+- For enhanced security, use a long, random word in your URL structure.
+
+**Examples:**
+- `http://ip:port/*webbasepath*/panel`
+- `http://domain:port/*webbasepath*/panel`
+
 </details>
 
 ## WARP Configuration
@@ -283,27 +318,20 @@ Our platform offers compatibility with a diverse range of architectures and devi
 
 #### Usage
 
-If you want to use routing to WARP before v2.1.0 follow steps as below:
+**For versions `v2.1.0` and later:**
 
-**1.** Install WARP on **SOCKS Proxy Mode**:
+WARP is built-in, and no additional installation is required. Simply turn on the necessary configuration in the panel.
 
-   ```sh
-   bash <(curl -sSL https://raw.githubusercontent.com/hamid-gh98/x-ui-scripts/main/install_warp_proxy.sh)
-   ```
+**For versions before `v2.1.0`:**
 
-**2.** If you already installed warp, you can uninstall using below command:
+1. Run the `x-ui` command in the terminal, then choose `WARP Management`.
+2. You will see the following options:
 
-   ```sh
-   warp u
-   ```
+   - **Account Type (free, plus, team):** Choose the appropriate account type.
+   - **Enable/Disable WireProxy:** Toggle WireProxy on or off.
+   - **Uninstall WARP:** Remove the WARP application.
 
-**3.** Turn on the config you need in panel
-
-   Config Features:
-
-   - Block Ads
-   - Route Google + Netflix + Spotify + OpenAI (ChatGPT) to WARP
-   - Fix Google 403 error
+3. Configure the settings as needed in the panel.
 
 </details>
 
@@ -314,29 +342,40 @@ If you want to use routing to WARP before v2.1.0 follow steps as below:
 
 #### Usage
 
-**Note:** IP Limit won't work correctly when using IP Tunnel
+**Note:** IP Limit won't work correctly when using IP Tunnel.
 
-- For versions up to `v1.6.1`:
+- **For versions up to `v1.6.1`:**
+  - The IP limit is built-in to the panel
 
-  - IP limit is built-in into the panel.
+**For versions `v1.7.0` and newer:**
 
-- For versions `v1.7.0` and newer:
+To enable the IP Limit functionality, you need to install `fail2ban` and its required files by following these steps:
 
-  - To make IP Limit work properly, you need to install fail2ban and its required files by following these steps:
+1. Run the `x-ui` command in the terminal, then choose `IP Limit Management`.
+2. You will see the following options:
 
-    1. Use the `x-ui` command inside the shell.
-    2. Select `IP Limit Management`.
-    3. Choose the appropriate options based on your needs.
+   - **Change Ban Duration:** Adjust the duration of bans.
+   - **Unban Everyone:** Lift all current bans.
+   - **Check Logs:** Review the logs.
+   - **Fail2ban Status:** Check the status of `fail2ban`.
+   - **Restart Fail2ban:** Restart the `fail2ban` service.
+   - **Uninstall Fail2ban:** Uninstall Fail2ban with configuration.
+
+3. Add a path for the access log on the panel by setting `Xray Configs/log/Access log` to `./access.log` then save and restart xray.
    
-  - make sure you have ./access.log on your Xray Configuration after v2.1.3 we have an option for it
-  
-  ```sh
+- **For versions before `v2.1.3`:**
+  - You need to set the access log path manually in your Xray configuration:
+
+    ```sh
     "log": {
       "access": "./access.log",
       "dnsLog": false,
       "loglevel": "warning"
     },
-  ```
+    ```
+
+- **For versions `v2.1.3` and newer:**
+  - There is an option for configuring `access.log` directly from the panel.
 
 </details>
 
@@ -420,6 +459,7 @@ Enter the user ID in input field number 4. The Telegram accounts with this id wi
 | `GET`  | `"/list"`                          | Get all inbounds                            |
 | `GET`  | `"/get/:id"`                       | Get inbound with inbound.id                 |
 | `GET`  | `"/getClientTraffics/:email"`      | Get Client Traffics with email              |
+| `GET`  | `"/getClientTrafficsById/:id"`     | Get client's traffic By ID |
 | `GET`  | `"/createbackup"`                  | Telegram bot sends backup to admins         |
 | `POST` | `"/add"`                           | Add inbound                                 |
 | `POST` | `"/del/:id"`                       | Delete Inbound                              |

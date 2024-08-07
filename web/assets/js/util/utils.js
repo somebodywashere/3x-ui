@@ -1,73 +1,60 @@
 class Msg {
-    constructor(success, msg, obj) {
-        this.success = false;
-        this.msg = "";
-        this.obj = null;
-
-        if (success != null) {
-            this.success = success;
-        }
-        if (msg != null) {
-            this.msg = msg;
-        }
-        if (obj != null) {
-            this.obj = obj;
-        }
+    constructor(success = false, msg = "", obj = null) {
+        this.success = success;
+        this.msg = msg;
+        this.obj = obj;
     }
 }
 
 class HttpUtil {
     static _handleMsg(msg) {
-        if (!(msg instanceof Msg)) {
+        if (!(msg instanceof Msg) || msg.msg === "") {
             return;
         }
-        if (msg.msg === "") {
-            return;
-        }
-        if (msg.success) {
-            Vue.prototype.$message.success(msg.msg);
-        } else {
-            Vue.prototype.$message.error(msg.msg);
-        }
+        const messageType = msg.success ? 'success' : 'error';
+        Vue.prototype.$message[messageType](msg.msg);
     }
 
     static _respToMsg(resp) {
-        const data = resp.data;
+        if (!resp || !resp.data) {
+            return new Msg(false, 'No response data');
+        }
+        const { data } = resp;
         if (data == null) {
             return new Msg(true);
-        } else if (typeof data === 'object') {
-            if (data.hasOwnProperty('success')) {
-                return new Msg(data.success, data.msg, data.obj);
-            } else {
-                return data;
-            }
-        } else {
-            return new Msg(false, 'unknown data:', data);
         }
+        if (typeof data === 'object' && 'success' in data) {
+            return new Msg(data.success, data.msg, data.obj);
+        }
+        return typeof data === 'object' ? data : new Msg(false, 'unknown data:', data);
     }
 
-    static async get(url, data, options) {
-        let msg;
+    static async get(url, params, options = {}) {
         try {
-            const resp = await axios.get(url, data, options);
-            msg = this._respToMsg(resp);
-        } catch (e) {
-            msg = new Msg(false, e.toString());
+            const resp = await axios.get(url, { params, ...options });
+            const msg = this._respToMsg(resp);
+            this._handleMsg(msg);
+            return msg;
+        } catch (error) {
+            console.error('GET request failed:', error);
+            const errorMsg = new Msg(false, error.response?.data?.message || error.message || 'Request failed');
+            this._handleMsg(errorMsg);
+            return errorMsg;
         }
-        this._handleMsg(msg);
-        return msg;
     }
 
-    static async post(url, data, options) {
-        let msg;
+    static async post(url, data, options = {}) {
         try {
             const resp = await axios.post(url, data, options);
-            msg = this._respToMsg(resp);
-        } catch (e) {
-            msg = new Msg(false, e.toString());
+            const msg = this._respToMsg(resp);
+            this._handleMsg(msg);
+            return msg;
+        } catch (error) {
+            console.error('POST request failed:', error);
+            const errorMsg = new Msg(false, error.response?.data?.message || error.message || 'Request failed');
+            this._handleMsg(errorMsg);
+            return errorMsg;
         }
-        this._handleMsg(msg);
-        return msg;
     }
 
     static async postWithModal(url, data, modal) {
@@ -113,12 +100,22 @@ class RandomUtil {
     }
 
     static randomShortId() {
-        let str = '';
-        for (let i = 0; i < 8; ++i) {
-            str += seq[this.randomInt(16)];
+        const lengths = [2, 4, 6, 8, 10, 12, 14, 16];
+        for (let i = lengths.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [lengths[i], lengths[j]] = [lengths[j], lengths[i]];
         }
-        return str;
-    }
+
+        let shortIds = [];
+        for (let length of lengths) {
+            let shortId = '';
+            for (let i = 0; i < length; i++) {
+                shortId += seq[this.randomInt(16)];
+            }
+            shortIds.push(shortId);
+        }
+        return shortIds;
+    }    
 
     static randomLowerAndNum(len) {
         let str = '';

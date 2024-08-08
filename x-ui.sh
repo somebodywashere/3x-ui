@@ -1243,7 +1243,7 @@ install_iplimit() {
 
     echo -e "${yellow}\nCheck if everything is ok...${plain}\n"
     sleep 2
-    if ! [[ systemctl status fail2ban | grep ERROR ]] || ! [[ fail2ban-client status | grep ERROR ]]; then
+    if ! systemctl status fail2ban | grep ERROR && ! fail2ban-client status | grep ERROR; then
         echo -e "${green}IP Limit installed and configured successfully!${plain}\n"
         before_show_menu
     else

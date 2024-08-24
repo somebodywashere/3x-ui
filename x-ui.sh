@@ -923,13 +923,7 @@ ssl_cert_issue_CF() {
         CF_Domain=""
         CF_GlobalKey=""
         CF_AccountEmail=""
-        certPath=/root/cert
-        if [ ! -d "$certPath" ]; then
-            mkdir $certPath
-        else
-            rm -rf $certPath
-            mkdir $certPath
-        fi
+
         LOGD "Please set a domain name:"
         read -p "Input your domain here:" CF_Domain
         LOGD "Your domain name is set to:${CF_Domain}"
@@ -939,6 +933,15 @@ ssl_cert_issue_CF() {
         LOGD "Please set up registered email:"
         read -p "Input your email here:" CF_AccountEmail
         LOGD "Your registered email address is:${CF_AccountEmail}"
+
+        certPath="/root/cert/${CF_Domain}"
+        if [ ! -d "$certPath" ]; then
+            mkdir $certPath
+        else
+            rm -rf $certPath
+            mkdir $certPath
+        fi
+
         ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
         if [ $? -ne 0 ]; then
             LOGE "Default CA, Lets'Encrypt fail, script exiting..."
@@ -953,9 +956,9 @@ ssl_cert_issue_CF() {
         else
             LOGI "Certificate issued Successfully, Installing..."
         fi
-        ~/.acme.sh/acme.sh --installcert -d ${CF_Domain} -d *.${CF_Domain} --ca-file /root/cert/ca.cer \
-            --cert-file /root/cert/${CF_Domain}.cer --key-file /root/cert/${CF_Domain}.key \
-            --fullchain-file /root/cert/fullchain.cer --reloadcmd "systemctl reload nginx && x-ui restart"
+        ~/.acme.sh/acme.sh --installcert -d ${CF_Domain} -d *.${CF_Domain} --ca-file /root/cert/${CF_Domain}/ca.cer \
+            --cert-file /root/cert/${CF_Domain}/${CF_Domain}.cer --key-file /root/cert/${CF_Domain}/${CF_Domain}.key \
+            --fullchain-file /root/cert/${CF_Domain}/fullchain.cer --reloadcmd "systemctl reload nginx ; x-ui restart"
         if [ $? -ne 0 ]; then
             LOGE "Certificate installation failed, script exiting..."
             exit 1

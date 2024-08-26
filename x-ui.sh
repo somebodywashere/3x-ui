@@ -936,10 +936,10 @@ ssl_cert_issue_CF() {
 
         certPath="/root/cert/${CF_Domain}"
         if [ ! -d "$certPath" ]; then
-            mkdir "$certPath"
+            mkdir -p "$certPath"
         else
             rm -rf "$certPath"
-            mkdir "$certPath"
+            mkdir -p "$certPath"
         fi
 
         ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt

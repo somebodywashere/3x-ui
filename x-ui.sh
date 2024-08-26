@@ -936,10 +936,10 @@ ssl_cert_issue_CF() {
 
         certPath="/root/cert/${CF_Domain}"
         if [ ! -d "$certPath" ]; then
-            mkdir $certPath
+            mkdir "$certPath"
         else
-            rm -rf $certPath
-            mkdir $certPath
+            rm -rf "$certPath"
+            mkdir "$certPath"
         fi
 
         ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
@@ -968,13 +968,13 @@ ssl_cert_issue_CF() {
         ~/.acme.sh/acme.sh --upgrade --auto-upgrade
         if [ $? -ne 0 ]; then
             LOGE "Auto update setup Failed, script exiting..."
-            ls -lah cert
-            chmod 755 $certPath
+            ls -lah cert/*
+            chmod 755 $certPath/*
             exit 1
         else
             LOGI "The certificate is installed and auto-renewal is turned on, Specific information is as follows"
-            ls -lah cert
-            chmod 755 $certPath
+            ls -lah cert/*
+            chmod 755 $certPath/*
         fi
     else
         show_menu

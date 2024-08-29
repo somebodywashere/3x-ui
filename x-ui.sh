@@ -957,8 +957,8 @@ ssl_cert_issue_CF() {
             LOGI "Certificate issued Successfully, Installing..."
         fi
         ~/.acme.sh/acme.sh --installcert -d ${CF_Domain} -d *.${CF_Domain} --ca-file /root/cert/${CF_Domain}/ca.cer \
-            --cert-file /root/cert/${CF_Domain}/${CF_Domain}.cer --key-file /root/cert/${CF_Domain}/${CF_Domain}.key \
-            --fullchain-file /root/cert/${CF_Domain}/fullchain.cer --reloadcmd "systemctl reload nginx ; x-ui restart"
+            --cert-file /root/cert/${CF_Domain}/${CF_Domain}.cer --key-file /root/cert/${CF_Domain}/privkey.pem \
+            --fullchain-file /root/cert/${CF_Domain}/fullchain.pem --reloadcmd "systemctl reload nginx ; x-ui restart"
         if [ $? -ne 0 ]; then
             LOGE "Certificate installation failed, script exiting..."
             exit 1

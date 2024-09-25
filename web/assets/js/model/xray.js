@@ -110,6 +110,14 @@ const TCP_CONGESTION_OPTION = {
     RENO: "reno",
 };
 
+const USERS_SECURITY = {
+    AES_128_GCM: "aes-128-gcm",
+    CHACHA20_POLY1305: "chacha20-poly1305",
+    AUTO: "auto",
+    NONE: "none",
+    ZERO: "zero",
+};
+
 Object.freeze(Protocols);
 Object.freeze(SSMethods);
 Object.freeze(XTLS_FLOW_CONTROL);
@@ -122,6 +130,7 @@ Object.freeze(SNIFFING_OPTION);
 Object.freeze(USAGE_OPTION);
 Object.freeze(DOMAIN_STRATEGY_OPTION);
 Object.freeze(TCP_CONGESTION_OPTION);
+Object.freeze(USERS_SECURITY);
 
 class XrayCommonClass {
 
@@ -440,37 +449,6 @@ class HttpStreamSettings extends XrayCommonClass {
     }
 }
 
-class QuicStreamSettings extends XrayCommonClass {
-    constructor(
-        security = 'none',
-        key = RandomUtil.randomSeq(10),
-        type = 'none'
-    ) {
-        super();
-        this.security = security;
-        this.key = key;
-        this.type = type;
-    }
-
-    static fromJson(json = {}) {
-        return new QuicStreamSettings(
-            json.security,
-            json.key,
-            json.header ? json.header.type : 'none',
-        );
-    }
-
-    toJson() {
-        return {
-            security: this.security,
-            key: this.key,
-            header: {
-                type: this.type,
-            }
-        }
-    }
-}
-
 class GrpcStreamSettings extends XrayCommonClass {
     constructor(
         serviceName = "",
@@ -546,10 +524,17 @@ class SplitHTTPStreamSettings extends XrayCommonClass {
         path = '/',
         host = '',
         headers = [],
-        scMaxConcurrentPosts = 100,
-        scMaxEachPostBytes = 1000000,
-        scMinPostsIntervalMs = 30,
+        scMaxConcurrentPosts = "100-200",
+        scMaxEachPostBytes = "1000000-2000000",
+        scMinPostsIntervalMs = "10-50",
         noSSEHeader = false,
+        xPaddingBytes = "100-1000",
+        xmux = { 
+            maxConcurrency: 0,
+            maxConnections: 0,
+            cMaxReuseTimes: 0,
+            cMaxLifetimeMs: 0
+        }
     ) {
         super();
         this.path = path;
@@ -559,6 +544,8 @@ class SplitHTTPStreamSettings extends XrayCommonClass {
         this.scMaxEachPostBytes = scMaxEachPostBytes;
         this.scMinPostsIntervalMs = scMinPostsIntervalMs;
         this.noSSEHeader = noSSEHeader;
+        this.xPaddingBytes = xPaddingBytes;
+        this.xmux = xmux;   
     }
 
     addHeader(name, value) {
@@ -578,6 +565,8 @@ class SplitHTTPStreamSettings extends XrayCommonClass {
             json.scMaxEachPostBytes,
             json.scMinPostsIntervalMs,
             json.noSSEHeader,
+            json.xPaddingBytes,
+            json.xmux,
         );
     }
 
@@ -590,6 +579,13 @@ class SplitHTTPStreamSettings extends XrayCommonClass {
             scMaxEachPostBytes: this.scMaxEachPostBytes,
             scMinPostsIntervalMs: this.scMinPostsIntervalMs,
             noSSEHeader: this.noSSEHeader,
+            xPaddingBytes: this.xPaddingBytes,
+            xmux: {
+                maxConcurrency: this.xmux.maxConcurrency,
+                maxConnections: this.xmux.maxConnections,
+                cMaxReuseTimes: this.xmux.cMaxReuseTimes,
+                cMaxLifetimeMs: this.xmux.cMaxLifetimeMs
+            }
         };
     }
 }
@@ -901,7 +897,7 @@ class RealityStreamSettings extends XrayCommonClass {
         minClient = '',
         maxClient = '',
         maxTimediff = 0,
-        shortIds = RandomUtil.randomShortId(),
+        shortIds = RandomUtil.randomShortIds(),
         settings = new RealityStreamSettings.Settings()
     ) {
         super();
@@ -1079,7 +1075,6 @@ class StreamSettings extends XrayCommonClass {
         kcpSettings = new KcpStreamSettings(),
         wsSettings = new WsStreamSettings(),
         httpSettings = new HttpStreamSettings(),
-        quicSettings = new QuicStreamSettings(),
         grpcSettings = new GrpcStreamSettings(),
         httpupgradeSettings = new HTTPUpgradeStreamSettings(),
         splithttpSettings = new SplitHTTPStreamSettings(),
@@ -1096,7 +1091,6 @@ class StreamSettings extends XrayCommonClass {
         this.kcp = kcpSettings;
         this.ws = wsSettings;
         this.http = httpSettings;
-        this.quic = quicSettings;
         this.grpc = grpcSettings;
         this.httpupgrade = httpupgradeSettings;
         this.splithttp = splithttpSettings;
@@ -1160,7 +1154,6 @@ class StreamSettings extends XrayCommonClass {
             KcpStreamSettings.fromJson(json.kcpSettings),
             WsStreamSettings.fromJson(json.wsSettings),
             HttpStreamSettings.fromJson(json.httpSettings),
-            QuicStreamSettings.fromJson(json.quicSettings),
             GrpcStreamSettings.fromJson(json.grpcSettings),
             HTTPUpgradeStreamSettings.fromJson(json.httpupgradeSettings),
             SplitHTTPStreamSettings.fromJson(json.splithttpSettings),
@@ -1181,7 +1174,6 @@ class StreamSettings extends XrayCommonClass {
             kcpSettings: network === 'kcp' ? this.kcp.toJson() : undefined,
             wsSettings: network === 'ws' ? this.ws.toJson() : undefined,
             httpSettings: network === 'http' ? this.http.toJson() : undefined,
-            quicSettings: network === 'quic' ? this.quic.toJson() : undefined,
             grpcSettings: network === 'grpc' ? this.grpc.toJson() : undefined,
             httpupgradeSettings: network === 'httpupgrade' ? this.httpupgrade.toJson() : undefined,
             splithttpSettings: network === 'splithttp' ? this.splithttp.toJson() : undefined,
@@ -1219,6 +1211,27 @@ class Sniffing extends XrayCommonClass {
     }
 }
 
+class Allocate extends XrayCommonClass {
+    constructor(
+        strategy = "always",
+        refresh = 5,
+        concurrency = 3,
+    ) {
+        super();
+        this.strategy = strategy;
+        this.refresh = refresh;
+        this.concurrency = concurrency;
+    }
+
+    static fromJson(json = {}) {
+        return new Allocate(
+            json.strategy,
+            json.refresh,
+            json.concurrency,
+        );
+    }
+}
+
 class Inbound extends XrayCommonClass {
     constructor(
         port = RandomUtil.randomIntRange(10000, 60000),
@@ -1228,6 +1241,7 @@ class Inbound extends XrayCommonClass {
         streamSettings = new StreamSettings(),
         tag = '',
         sniffing = new Sniffing(),
+        allocate = new Allocate(),
         clientStats = '',
     ) {
         super();
@@ -1238,6 +1252,7 @@ class Inbound extends XrayCommonClass {
         this.stream = streamSettings;
         this.tag = tag;
         this.sniffing = sniffing;
+        this.allocate = allocate;
         this.clientStats = clientStats;
     }
     getClientStats() {
@@ -1296,10 +1311,6 @@ class Inbound extends XrayCommonClass {
 
     get isKcp() {
         return this.network === "kcp";
-    }
-
-    get isQuic() {
-        return this.network === "quic"
     }
 
     get isGrpc() {
@@ -1380,18 +1391,6 @@ class Inbound extends XrayCommonClass {
         return null;
     }
 
-    get quicSecurity() {
-        return this.stream.quic.security;
-    }
-
-    get quicKey() {
-        return this.stream.quic.key;
-    }
-
-    get quicType() {
-        return this.stream.quic.type;
-    }
-
     get kcpType() {
         return this.stream.kcp.type;
     }
@@ -1411,7 +1410,7 @@ class Inbound extends XrayCommonClass {
 
     canEnableTls() {
         if (![Protocols.VMESS, Protocols.VLESS, Protocols.TROJAN, Protocols.SHADOWSOCKS].includes(this.protocol)) return false;
-        return ["tcp", "ws", "http", "quic", "grpc", "httpupgrade", "splithttp"].includes(this.network);
+        return ["tcp", "ws", "http", "grpc", "httpupgrade", "splithttp"].includes(this.network);
     }
 
     //this is used for xtls-rprx-vision
@@ -1444,22 +1443,24 @@ class Inbound extends XrayCommonClass {
         this.stream = new StreamSettings();
         this.tag = '';
         this.sniffing = new Sniffing();
+        this.allocate = new Allocate();
     }
 
-    genVmessLink(address = '', port = this.port, forceTls, remark = '', clientId) {
+    genVmessLink(address = '', port = this.port, forceTls, remark = '', clientId, security) {
         if (this.protocol !== Protocols.VMESS) {
             return '';
         }
-        const security = forceTls == 'same' ? this.stream.security : forceTls;
+        const tls = forceTls == 'same' ? this.stream.security : forceTls;
         let obj = {
             v: '2',
             ps: remark,
             add: address,
             port: port,
             id: clientId,
+            scy: security,
             net: this.stream.network,
             type: 'none',
-            tls: security,
+            tls: tls,
         };
         const network = this.stream.network;
         if (network === 'tcp') {
@@ -1483,10 +1484,6 @@ class Inbound extends XrayCommonClass {
             obj.net = 'h2';
             obj.path = this.stream.http.path;
             obj.host = this.stream.http.host.join(',');
-        } else if (network === 'quic') {
-            obj.type = this.stream.quic.type;
-            obj.host = this.stream.quic.security;
-            obj.path = this.stream.quic.key;
         } else if (network === 'grpc') {
             obj.path = this.stream.grpc.serviceName;
             obj.authority = this.stream.grpc.authority;
@@ -1555,12 +1552,6 @@ class Inbound extends XrayCommonClass {
                 const http = this.stream.http;
                 params.set("path", http.path);
                 params.set("host", http.host);
-                break;
-            case "quic":
-                const quic = this.stream.quic;
-                params.set("quicSecurity", quic.security);
-                params.set("key", quic.key);
-                params.set("headerType", quic.type);
                 break;
             case "grpc":
                 const grpc = this.stream.grpc;
@@ -1677,12 +1668,6 @@ class Inbound extends XrayCommonClass {
                 params.set("path", http.path);
                 params.set("host", http.host);
                 break;
-            case "quic":
-                const quic = this.stream.quic;
-                params.set("quicSecurity", quic.security);
-                params.set("key", quic.key);
-                params.set("headerType", quic.type);
-                break;
             case "grpc":
                 const grpc = this.stream.grpc;
                 params.set("serviceName", grpc.serviceName);
@@ -1764,12 +1749,6 @@ class Inbound extends XrayCommonClass {
                 const http = this.stream.http;
                 params.set("path", http.path);
                 params.set("host", http.host);
-                break;
-            case "quic":
-                const quic = this.stream.quic;
-                params.set("quicSecurity", quic.security);
-                params.set("key", quic.key);
-                params.set("headerType", quic.type);
                 break;
             case "grpc":
                 const grpc = this.stream.grpc;
@@ -1870,7 +1849,7 @@ class Inbound extends XrayCommonClass {
     genLink(address = '', port = this.port, forceTls = 'same', remark = '', client) {
         switch (this.protocol) {
             case Protocols.VMESS:
-                return this.genVmessLink(address, port, forceTls, remark, client.id);
+                return this.genVmessLink(address, port, forceTls, remark, client.id, client.security);
             case Protocols.VLESS:
                 return this.genVLESSLink(address, port, forceTls, remark, client.id, client.flow);
             case Protocols.SHADOWSOCKS:
@@ -1944,6 +1923,7 @@ class Inbound extends XrayCommonClass {
             StreamSettings.fromJson(json.streamSettings),
             json.tag,
             Sniffing.fromJson(json.sniffing),
+            Allocate.fromJson(json.allocate),
             json.clientStats
         )
     }
@@ -1961,6 +1941,7 @@ class Inbound extends XrayCommonClass {
             streamSettings: streamSettings,
             tag: this.tag,
             sniffing: this.sniffing.toJson(),
+            allocate: this.allocate.toJson(),
             clientStats: this.clientStats
         };
     }
@@ -2007,24 +1988,24 @@ Inbound.Settings = class extends XrayCommonClass {
 
 Inbound.VmessSettings = class extends Inbound.Settings {
     constructor(protocol,
-        vmesses = [new Inbound.VmessSettings.Vmess()]) {
+        vmesses = [new Inbound.VmessSettings.VMESS()]) {
         super(protocol);
         this.vmesses = vmesses;
     }
 
     indexOfVmessById(id) {
-        return this.vmesses.findIndex(vmess => vmess.id === id);
+        return this.vmesses.findIndex(VMESS => VMESS.id === id);
     }
 
-    addVmess(vmess) {
-        if (this.indexOfVmessById(vmess.id) >= 0) {
+    addVmess(VMESS) {
+        if (this.indexOfVmessById(VMESS.id) >= 0) {
             return false;
         }
-        this.vmesses.push(vmess);
+        this.vmesses.push(VMESS);
     }
 
-    delVmess(vmess) {
-        const i = this.indexOfVmessById(vmess.id);
+    delVmess(VMESS) {
+        const i = this.indexOfVmessById(VMESS.id);
         if (i >= 0) {
             this.vmesses.splice(i, 1);
         }
@@ -2033,7 +2014,7 @@ Inbound.VmessSettings = class extends Inbound.Settings {
     static fromJson(json = {}) {
         return new Inbound.VmessSettings(
             Protocols.VMESS,
-            json.clients.map(client => Inbound.VmessSettings.Vmess.fromJson(client)),
+            json.clients.map(client => Inbound.VmessSettings.VMESS.fromJson(client)),
         );
     }
 
@@ -2043,10 +2024,23 @@ Inbound.VmessSettings = class extends Inbound.Settings {
         };
     }
 };
-Inbound.VmessSettings.Vmess = class extends XrayCommonClass {
-    constructor(id = RandomUtil.randomUUID(), email = RandomUtil.randomLowerAndNum(8), limitIp = 0, totalGB = 0, expiryTime = 0, enable = true, tgId = '', subId = RandomUtil.randomLowerAndNum(16), reset = 0) {
+
+Inbound.VmessSettings.VMESS = class extends XrayCommonClass {
+    constructor(
+        id = RandomUtil.randomUUID(),
+        security = USERS_SECURITY.AUTO,
+        email = RandomUtil.randomLowerAndNum(8),
+        limitIp = 0,
+        totalGB = 0,
+        expiryTime = 0,
+        enable = true,
+        tgId = '',
+        subId = RandomUtil.randomLowerAndNum(16),
+        reset = 0
+    ) {
         super();
         this.id = id;
+        this.security = security;
         this.email = email;
         this.limitIp = limitIp;
         this.totalGB = totalGB;
@@ -2058,8 +2052,9 @@ Inbound.VmessSettings.Vmess = class extends XrayCommonClass {
     }
 
     static fromJson(json = {}) {
-        return new Inbound.VmessSettings.Vmess(
+        return new Inbound.VmessSettings.VMESS(
             json.id,
+            json.security,
             json.email,
             json.limitIp,
             json.totalGB,
@@ -2098,10 +2093,12 @@ Inbound.VmessSettings.Vmess = class extends XrayCommonClass {
 };
 
 Inbound.VLESSSettings = class extends Inbound.Settings {
-    constructor(protocol,
+    constructor(
+        protocol,
         vlesses = [new Inbound.VLESSSettings.VLESS()],
         decryption = 'none',
-        fallbacks = []) {
+        fallbacks = []
+    ) {
         super(protocol);
         this.vlesses = vlesses;
         this.decryption = decryption;
@@ -2135,7 +2132,18 @@ Inbound.VLESSSettings = class extends Inbound.Settings {
 };
 
 Inbound.VLESSSettings.VLESS = class extends XrayCommonClass {
-    constructor(id = RandomUtil.randomUUID(), flow = '', email = RandomUtil.randomLowerAndNum(8), limitIp = 0, totalGB = 0, expiryTime = 0, enable = true, tgId = '', subId = RandomUtil.randomLowerAndNum(16), reset = 0) {
+    constructor(
+        id = RandomUtil.randomUUID(),
+        flow = '',
+        email = RandomUtil.randomLowerAndNum(8),
+        limitIp = 0,
+        totalGB = 0,
+        expiryTime = 0,
+        enable = true,
+        tgId = '',
+        subId = RandomUtil.randomLowerAndNum(16),
+        reset = 0
+    ) {
         super();
         this.id = id;
         this.flow = flow;
@@ -2259,8 +2267,20 @@ Inbound.TrojanSettings = class extends Inbound.Settings {
         };
     }
 };
+
 Inbound.TrojanSettings.Trojan = class extends XrayCommonClass {
-    constructor(password = RandomUtil.randomSeq(10), flow = '', email = RandomUtil.randomLowerAndNum(8), limitIp = 0, totalGB = 0, expiryTime = 0, enable = true, tgId = '', subId = RandomUtil.randomLowerAndNum(16), reset = 0) {
+    constructor(
+        password = RandomUtil.randomSeq(10),
+        flow = '',
+        email = RandomUtil.randomLowerAndNum(8),
+        limitIp = 0,
+        totalGB = 0,
+        expiryTime = 0,
+        enable = true,
+        tgId = '',
+        subId = RandomUtil.randomLowerAndNum(16),
+        reset = 0
+    ) {
         super();
         this.password = password;
         this.flow = flow;
@@ -2405,7 +2425,18 @@ Inbound.ShadowsocksSettings = class extends Inbound.Settings {
 };
 
 Inbound.ShadowsocksSettings.Shadowsocks = class extends XrayCommonClass {
-    constructor(method = '', password = RandomUtil.randomShadowsocksPassword(), email = RandomUtil.randomLowerAndNum(8), limitIp = 0, totalGB = 0, expiryTime = 0, enable = true, tgId = '', subId = RandomUtil.randomLowerAndNum(16), reset = 0) {
+    constructor(
+        method = '',
+        password = RandomUtil.randomShadowsocksPassword(),
+        email = RandomUtil.randomLowerAndNum(8),
+        limitIp = 0,
+        totalGB = 0,
+        expiryTime = 0,
+        enable = true,
+        tgId = '',
+        subId = RandomUtil.randomLowerAndNum(16),
+        reset = 0
+    ) {
         super();
         this.method = method;
         this.password = password;
@@ -2477,13 +2508,18 @@ Inbound.ShadowsocksSettings.Shadowsocks = class extends XrayCommonClass {
 };
 
 Inbound.DokodemoSettings = class extends Inbound.Settings {
-    constructor(protocol, address, port, network = 'tcp,udp', followRedirect = false, timeout = 0) {
+    constructor(
+        protocol,
+        address,
+        port,
+        network = 'tcp,udp',
+        followRedirect = false
+    ) {
         super(protocol);
         this.address = address;
         this.port = port;
         this.network = network;
         this.followRedirect = followRedirect;
-        this.timeout = timeout;
     }
 
     static fromJson(json = {}) {
@@ -2493,7 +2529,6 @@ Inbound.DokodemoSettings = class extends Inbound.Settings {
             json.port,
             json.network,
             json.followRedirect,
-            json.timeout,
         );
     }
 
@@ -2503,7 +2538,6 @@ Inbound.DokodemoSettings = class extends Inbound.Settings {
             port: this.port,
             network: this.network,
             followRedirect: this.followRedirect,
-            timeout: this.timeout,
         };
     }
 };
@@ -2563,9 +2597,14 @@ Inbound.SocksSettings.SocksAccount = class extends XrayCommonClass {
 };
 
 Inbound.HttpSettings = class extends Inbound.Settings {
-    constructor(protocol, accounts = [new Inbound.HttpSettings.HttpAccount()]) {
+    constructor(
+        protocol, 
+        accounts = [new Inbound.HttpSettings.HttpAccount()],
+        allowTransparent = false,
+    ) {
         super(protocol);
         this.accounts = accounts;
+        this.allowTransparent = allowTransparent;
     }
 
     addAccount(account) {
@@ -2580,12 +2619,14 @@ Inbound.HttpSettings = class extends Inbound.Settings {
         return new Inbound.HttpSettings(
             Protocols.HTTP,
             json.accounts.map(account => Inbound.HttpSettings.HttpAccount.fromJson(account)),
+            json.allowTransparent,
         );
     }
 
     toJson() {
         return {
             accounts: Inbound.HttpSettings.toJsonArray(this.accounts),
+            allowTransparent: this.allowTransparent,
         };
     }
 };

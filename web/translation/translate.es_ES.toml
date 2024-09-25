@@ -225,9 +225,6 @@
 "requestHeader" = "Encabezado de solicitud"
 "responseHeader" = "Encabezado de respuesta"
 
-[pages.inbounds.stream.quic]
-"encryption" = "Cifrado"
-
 [pages.settings]
 "title" = "Configuraciones"
 "save" = "Guardar"
@@ -312,12 +309,14 @@
 "fragment" = "Fragmentación"
 "fragmentDesc" = "Habilitar la fragmentación para el paquete de saludo de TLS"
 "fragmentSett" = "Configuración de Fragmentación"
+"noisesDesc" = "Activar Noises."
+"noisesSett" = "Configuración de Noises"
 "mux" = "Mux"
 "muxDesc" = "Transmite múltiples flujos de datos independientes dentro de un flujo de datos establecido."
 "muxSett" = "Configuración Mux"
 "direct" = "Conexión Directa"
 "directDesc" = "Establece conexiones directas con dominios o rangos de IP de un país específico."
-"directSett" = "Opciones de Conexión Directa"
+
 
 [pages.xray]
 "title" = "Xray Configuración"
@@ -423,6 +422,10 @@
 "accessLogDesc" = "La ruta del archivo para el registro de acceso. El valor especial 'ninguno' deshabilita los registros de acceso"
 "errorLog" = "Registro de Errores"
 "errorLogDesc" = "La ruta del archivo para el registro de errores. El valor especial 'none' desactiva los registros de errores."
+"dnsLog" = "Registro DNS"
+"dnsLogDesc" = "Si habilitar los registros de consulta DNS"
+"maskAddress" = "Enmascarar Dirección"
+"maskAddressDesc" = "Máscara de dirección IP, cuando se habilita, reemplazará automáticamente la dirección IP que aparece en el registro."
 
 [pages.xray.rules]
 "first" = "Primero"
@@ -616,11 +619,13 @@
 "confirmNumberAdd" = "✅ Confirmar agregando: {{ .Num }}"
 "limitTraffic" = "🚧 Límite de tráfico"
 "getBanLogs" = "Registros de prohibición"
+"allClients" = "Todos los Clientes"
 
 [tgbot.answers]
 "successfulOperation" = "✅ ¡Exitosa!"
 "errorOperation" = "❗ Error en la Operación."
 "getInboundsFailed" = "❌ Error al obtener las entradas"
+"getClientsFailed" = "❌ No se pudo obtener los clientes."
 "canceled" = "❌ {{ .Email }} : Operación cancelada."
 "clientRefreshSuccess" = "✅ {{ .Email }} : Cliente actualizado exitosamente."
 "IpRefreshSuccess" = "✅ {{ .Email }} : IPs actualizadas exitosamente."
@@ -635,4 +640,6 @@
 "removedTGUserSuccess" = "✅ {{ .Email }} : Usuario de Telegram eliminado exitosamente."
 "enableSuccess" = "✅ {{ .Email }} : Habilitado exitosamente."
 "disableSuccess" = "✅ {{ .Email }} : Deshabilitado exitosamente."
-"askToAddUserId" = "¡No se encuentra su configuración!\r\nPor favor, pídale a su administrador que use su ID de usuario de Telegram en su(s) configuración(es).\r\n\r\nSu ID de usuario: <code>{{ .TgUserID }}</code>"
+"askToAddUserId" = "¡No se encuentra su configuración!\r\nPor favor, pídale a su administrador que use su ChatID de usuario de Telegram en su(s) configuración(es).\r\n\r\nSu ChatID de usuario: <code>{{ .TgUserID }}</code>"
+"chooseClient" = "Elige un Cliente para Inbound {{ .Inbound }}"
+"chooseInbound" = "Elige un Inbound"

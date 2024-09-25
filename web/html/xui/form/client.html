@@ -39,6 +39,11 @@
         </template>
         <a-input v-model.trim="client.id"></a-input>
     </a-form-item>
+    <a-form-item v-if="inbound.protocol === Protocols.VMESS" label='{{ i18n "security" }}'>
+        <a-select v-model="client.security" :dropdown-class-name="themeSwitcher.currentTheme">
+            <a-select-option v-for="key in USERS_SECURITY" :value="key">[[ key ]]</a-select-option>
+        </a-select>
+    </a-form-item>
     <a-form-item v-if="client.email && app.subSettings.enable">
         <template slot="label">
             <a-tooltip>
@@ -57,7 +62,7 @@
                 <template slot="title">
                     <span>{{ i18n "pages.inbounds.telegramDesc" }}</span>
                 </template>
-                Telegram ID
+                Telegram ChatID
                 <a-icon type="question-circle"></a-icon>
             </a-tooltip>
         </template>

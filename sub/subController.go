@@ -3,6 +3,7 @@ package sub
 import (
 	"encoding/base64"
 	"net"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,6 +27,7 @@ func NewSUBController(
 	rModel string,
 	update string,
 	jsonFragment string,
+	jsonNoise string,
 	jsonMux string,
 	jsonRules string,
 ) *SUBController {
@@ -37,7 +39,7 @@ func NewSUBController(
 		updateInterval: update,
 
 		subService:     sub,
-		subJsonService: NewSubJsonService(jsonFragment, jsonMux, jsonRules, sub),
+		subJsonService: NewSubJsonService(jsonFragment, jsonNoise, jsonMux, jsonRules, sub),
 	}
 	a.initRouter(g)
 	return a
@@ -54,7 +56,10 @@ func (a *SUBController) initRouter(g *gin.RouterGroup) {
 
 func (a *SUBController) subs(c *gin.Context) {
 	subId := c.Param("subid")
-	host := c.GetHeader("X-Forwarded-Host")
+	var host string
+	if h, err := getHostFromXFH(c.GetHeader("X-Forwarded-Host")); err == nil {
+		host = h
+	}
 	if host == "" {
 		host = c.GetHeader("X-Real-IP")
 	}
@@ -89,7 +94,10 @@ func (a *SUBController) subs(c *gin.Context) {
 
 func (a *SUBController) subJsons(c *gin.Context) {
 	subId := c.Param("subid")
-	host := c.GetHeader("X-Forwarded-Host")
+	var host string
+	if h, err := getHostFromXFH(c.GetHeader("X-Forwarded-Host")); err == nil {
+		host = h
+	}
 	if host == "" {
 		host = c.GetHeader("X-Real-IP")
 	}
@@ -112,4 +120,15 @@ func (a *SUBController) subJsons(c *gin.Context) {
 
 		c.String(200, jsonSub)
 	}
+}
+
+func getHostFromXFH(s string) (string, error) {
+	if strings.Contains(s, ":") {
+		realHost, _, err := net.SplitHostPort(s)
+		if err != nil {
+			return "", err
+		}
+		return realHost, nil
+	}
+	return s, nil
 }

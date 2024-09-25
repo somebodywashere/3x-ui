@@ -10,7 +10,7 @@ import (
 type Protocol string
 
 const (
-	VMess       Protocol = "vmess"
+	VMESS       Protocol = "vmess"
 	VLESS       Protocol = "vless"
 	DOKODEMO    Protocol = "dokodemo-door"
 	HTTP        Protocol = "http"
@@ -46,6 +46,7 @@ type Inbound struct {
 	StreamSettings string   `json:"streamSettings" form:"streamSettings"`
 	Tag            string   `json:"tag" form:"tag" gorm:"unique"`
 	Sniffing       string   `json:"sniffing" form:"sniffing"`
+	Allocate       string   `json:"allocate" form:"allocate"`
 }
 
 type OutboundTraffics struct {
@@ -75,6 +76,7 @@ func (i *Inbound) GenXrayInboundConfig() *xray.InboundConfig {
 		StreamSettings: json_util.RawMessage(i.StreamSettings),
 		Tag:            i.Tag,
 		Sniffing:       json_util.RawMessage(i.Sniffing),
+		Allocate:       json_util.RawMessage(i.Allocate),
 	}
 }
 
@@ -86,6 +88,7 @@ type Setting struct {
 
 type Client struct {
 	ID         string `json:"id"`
+	Security   string `json:"security"`
 	Password   string `json:"password"`
 	Flow       string `json:"flow"`
 	Email      string `json:"email"`

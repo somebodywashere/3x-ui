@@ -49,8 +49,14 @@ elif [[ "${release}" == "manjaro" ]]; then
     echo "Your OS is Manjaro"
 elif [[ "${release}" == "armbian" ]]; then
     echo "Your OS is Armbian"
+elif [[ "${release}" == "alpine" ]]; then
+    echo "Your OS is Alpine Linux"
 elif [[ "${release}" == "opensuse-tumbleweed" ]]; then
     echo "Your OS is OpenSUSE Tumbleweed"
+elif [[ "${release}" == "openEuler" ]]; then
+    if [[ ${os_version} -lt 2203 ]]; then
+        echo -e "${red} Please use OpenEuler 22.03 or higher ${plain}\n" && exit 1
+    fi
 elif [[ "${release}" == "centos" ]]; then
     if [[ ${os_version} -lt 8 ]]; then
         echo -e "${red} Please use CentOS 8 or higher ${plain}\n" && exit 1
@@ -79,7 +85,7 @@ elif [[ "${release}" == "rocky" ]]; then
     if [[ ${os_version} -lt 8 ]]; then
         echo -e "${red} Please use Rocky Linux 8 or higher ${plain}\n" && exit 1
     fi
-elif [[ "${release}" == "oracle" ]]; then
+elif [[ "${release}" == "ol" ]]; then
     if [[ ${os_version} -lt 8 ]]; then
         echo -e "${red} Please use Oracle Linux 8 or higher ${plain}\n" && exit 1
     fi
@@ -89,6 +95,7 @@ else
     echo "- Ubuntu 20.04+"
     echo "- Debian 11+"
     echo "- CentOS 8+"
+    echo "- OpenEuler 22.03+"
     echo "- Fedora 36+"
     echo "- Arch Linux"
     echo "- Parch Linux"
@@ -107,7 +114,7 @@ install_base() {
     ubuntu | debian | armbian)
         apt-get update && apt-get install -y -q wget curl tar tzdata
         ;;
-    centos | almalinux | rocky | oracle)
+    centos | almalinux | rocky | ol)
         yum -y update && yum install -y -q wget curl tar tzdata
         ;;
     fedora | amzn)
@@ -131,44 +138,63 @@ gen_random_string() {
     echo "$random_string"
 }
 
-# This function will be called when user installed x-ui out of security
 config_after_install() {
-    echo -e "${yellow}Install/update finished! For security it's recommended to modify panel settings ${plain}"
-    read -p "Would you like to customize the panel settings? (If not, random settings will be applied) [y/n]: " config_confirm
-    if [[ "${config_confirm}" == "y" || "${config_confirm}" == "Y" ]]; then
-        read -p "Please set up your username: " config_account
-        echo -e "${yellow}Your username will be: ${config_account}${plain}"
-        read -p "Please set up your password: " config_password
-        echo -e "${yellow}Your password will be: ${config_password}${plain}"
-        read -p "Please set up the panel port: " config_port
-        echo -e "${yellow}Your panel port is: ${config_port}${plain}"
-        read -p "Please set up the web base path (ip:port/webbasepath/): " config_webBasePath
-        echo -e "${yellow}Your web base path is: ${config_webBasePath}${plain}"
-        echo -e "${yellow}Initializing, please wait...${plain}"
-        /usr/local/x-ui/x-ui setting -username ${config_account} -password ${config_password}
-        echo -e "${yellow}Account name and password set successfully!${plain}"
-        /usr/local/x-ui/x-ui setting -port ${config_port}
-        echo -e "${yellow}Panel port set successfully!${plain}"
-        /usr/local/x-ui/x-ui setting -webBasePath ${config_webBasePath}
-        echo -e "${yellow}Web base path set successfully!${plain}"
-    else
-        echo -e "${red}Cancel...${plain}"
-        if [[ ! -f "/etc/x-ui/x-ui.db" ]]; then
-            local usernameTemp=$(head -c 6 /dev/urandom | base64)
-            local passwordTemp=$(head -c 6 /dev/urandom | base64)
-            local webBasePathTemp=$(gen_random_string 10)
-            /usr/local/x-ui/x-ui setting -username ${usernameTemp} -password ${passwordTemp} -webBasePath ${webBasePathTemp}
-            echo -e "This is a fresh installation, will generate random login info for security concerns:"
+    local existing_username=$(/usr/local/x-ui/x-ui setting -show true | grep -Eo 'username: .+' | awk '{print $2}')
+    local existing_password=$(/usr/local/x-ui/x-ui setting -show true | grep -Eo 'password: .+' | awk '{print $2}')
+    local existing_webBasePath=$(/usr/local/x-ui/x-ui setting -show true | grep -Eo 'webBasePath: .+' | awk '{print $2}')
+    local existing_port=$(/usr/local/x-ui/x-ui setting -show true | grep -Eo 'port: .+' | awk '{print $2}')
+    local server_ip=$(curl -s https://api.ipify.org)
+
+    if [[ ${#existing_webBasePath} -lt 4 ]]; then
+        if [[ "$existing_username" == "admin" && "$existing_password" == "admin" ]]; then
+            local config_webBasePath=$(gen_random_string 15)
+            local config_username=$(gen_random_string 10)
+            local config_password=$(gen_random_string 10)
+
+            read -p "Would you like to customize the Panel Port settings? (If not, a random port will be applied) [y/n]: " config_confirm
+            if [[ "${config_confirm}" == "y" || "${config_confirm}" == "Y" ]]; then
+                read -p "Please set up the panel port: " config_port
+                echo -e "${yellow}Your Panel Port is: ${config_port}${plain}"
+            else
+                local config_port=$(shuf -i 1024-62000 -n 1)
+                echo -e "${yellow}Generated random port: ${config_port}${plain}"
+            fi
+
+            /usr/local/x-ui/x-ui setting -username "${config_username}" -password "${config_password}" -port "${config_port}" -webBasePath "${config_webBasePath}"
+            echo -e "This is a fresh installation, generating random login info for security concerns:"
             echo -e "###############################################"
-            echo -e "${green}Username: ${usernameTemp}${plain}"
-            echo -e "${green}Password: ${passwordTemp}${plain}"
-            echo -e "${green}WebBasePath: ${webBasePathTemp}${plain}"
+            echo -e "${green}Username: ${config_username}${plain}"
+            echo -e "${green}Password: ${config_password}${plain}"
+            echo -e "${green}Port: ${config_port}${plain}"
+            echo -e "${green}WebBasePath: ${config_webBasePath}${plain}"
+            echo -e "${green}Access URL: http://${server_ip}:${config_port}/${config_webBasePath}${plain}"
             echo -e "###############################################"
-            echo -e "${yellow}If you forgot your login info, you can type "x-ui settings" to check after installation${plain}"
+            echo -e "${yellow}If you forgot your login info, you can type 'x-ui settings' to check${plain}"
         else
-            echo -e "${yellow}This is your upgrade, will keep old settings. If you forgot your login info, you can type "x-ui settings" to check${plain}"
+            local config_webBasePath=$(gen_random_string 15)
+            echo -e "${yellow}WebBasePath is missing or too short. Generating a new one...${plain}"
+            /usr/local/x-ui/x-ui setting -webBasePath "${config_webBasePath}"
+            echo -e "${green}New WebBasePath: ${config_webBasePath}${plain}"
+            echo -e "${green}Access URL: http://${server_ip}:${existing_port}/${config_webBasePath}${plain}"
+        fi
+    else
+        if [[ "$existing_username" == "admin" && "$existing_password" == "admin" ]]; then
+            local config_username=$(gen_random_string 10)
+            local config_password=$(gen_random_string 10)
+
+            echo -e "${yellow}Default credentials detected. Security update required...${plain}"
+            /usr/local/x-ui/x-ui setting -username "${config_username}" -password "${config_password}"
+            echo -e "Generated new random login credentials:"
+            echo -e "###############################################"
+            echo -e "${green}Username: ${config_username}${plain}"
+            echo -e "${green}Password: ${config_password}${plain}"
+            echo -e "###############################################"
+            echo -e "${yellow}If you forgot your login info, you can type 'x-ui settings' to check${plain}"
+        else
+            echo -e "${green}Username, Password, and WebBasePath are properly set. Exiting...${plain}"
         fi
     fi
+
     /usr/local/x-ui/x-ui migrate
 }
 
@@ -176,24 +202,32 @@ install_x-ui() {
     cd /usr/local/
 
     if [ $# == 0 ]; then
-        last_version=$(curl -Ls "https://api.github.com/repos/MHSanaei/3x-ui/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-        if [[ ! -n "$last_version" ]]; then
-            echo -e "${red}Failed to fetch x-ui version, it maybe due to Github API restrictions, please try it later${plain}"
+        tag_version=$(curl -Ls "https://api.github.com/repos/MHSanaei/3x-ui/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+        if [[ ! -n "$tag_version" ]]; then
+            echo -e "${red}Failed to fetch x-ui version, it may be due to GitHub API restrictions, please try it later${plain}"
             exit 1
         fi
-        echo -e "Got x-ui latest version: ${last_version}, beginning the installation..."
-        wget -N --no-check-certificate -O /usr/local/x-ui-linux-$(arch).tar.gz https://github.com/MHSanaei/3x-ui/releases/download/${last_version}/x-ui-linux-$(arch).tar.gz
+        echo -e "Got x-ui latest version: ${tag_version}, beginning the installation..."
+        wget -N --no-check-certificate -O /usr/local/x-ui-linux-$(arch).tar.gz https://github.com/MHSanaei/3x-ui/releases/download/${tag_version}/x-ui-linux-$(arch).tar.gz
         if [[ $? -ne 0 ]]; then
-            echo -e "${red}Downloading x-ui failed, please be sure that your server can access Github ${plain}"
+            echo -e "${red}Downloading x-ui failed, please be sure that your server can access GitHub ${plain}"
             exit 1
         fi
     else
-        last_version=$1
-        url="https://github.com/MHSanaei/3x-ui/releases/download/${last_version}/x-ui-linux-$(arch).tar.gz"
+        tag_version=$1
+        tag_version_numeric=${tag_version#v}
+        min_version="2.3.5"
+
+        if [[ "$(printf '%s\n' "$min_version" "$tag_version_numeric" | sort -V | head -n1)" != "$min_version" ]]; then
+            echo -e "${red}Please use a newer version (at least v2.3.5). Exiting installation.${plain}"
+            exit 1
+        fi
+
+        url="https://github.com/MHSanaei/3x-ui/releases/download/${tag_version}/x-ui-linux-$(arch).tar.gz"
         echo -e "Beginning to install x-ui $1"
         wget -N --no-check-certificate -O /usr/local/x-ui-linux-$(arch).tar.gz ${url}
         if [[ $? -ne 0 ]]; then
-            echo -e "${red}Download x-ui $1 failed,please check the version exists ${plain}"
+            echo -e "${red}Download x-ui $1 failed, please check if the version exists ${plain}"
             exit 1
         fi
     fi
@@ -224,7 +258,7 @@ install_x-ui() {
     systemctl daemon-reload
     systemctl enable x-ui
     systemctl start x-ui
-    echo -e "${green}x-ui ${last_version}${plain} installation finished, it is running now..."
+    echo -e "${green}x-ui ${tag_version}${plain} installation finished, it is running now..."
     echo -e ""
     echo -e "x-ui control menu usages: "
     echo -e "----------------------------------------------"
@@ -240,7 +274,7 @@ install_x-ui() {
     echo -e "x-ui log          - Check logs"
     echo -e "x-ui banlog       - Check Fail2ban ban logs"
     echo -e "x-ui update       - Update"
-    echo -e "x-ui custom       - custom version"
+    echo -e "x-ui legacy       - legacy version"
     echo -e "x-ui install      - Install"
     echo -e "x-ui uninstall    - Uninstall"
     echo -e "----------------------------------------------"

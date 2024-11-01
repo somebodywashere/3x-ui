@@ -30,12 +30,12 @@
 bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)
 ```
 
-## Install Custom Version
+## Install legacy Version (we don't recommend)
 
-To install your desired version, add the version to the end of the installation command. e.g., ver `v2.4.2`:
+To install your desired version, use following installation command. e.g., ver `v1.7.9`:
 
 ```
-bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) v2.4.2
+VERSION=v1.7.9 && bash <(curl -Ls "https://raw.githubusercontent.com/mhsanaei/3x-ui/$VERSION/install.sh") $VERSION
 ```
 
 ## SSL Certificate
@@ -54,6 +54,8 @@ To manage SSL certificates using ACME:
    - **Get SSL:** Obtain SSL certificates.
    - **Revoke:** Revoke existing SSL certificates.
    - **Force Renew:** Force renewal of SSL certificates.
+   - **Show Existing Domains:** Display all domain certificates available on the server.  
+   - **Set Certificate Paths for the Panel:** Specify the certificate for your domain to be used by the panel. 
 
 ### Certbot
 
@@ -245,6 +247,7 @@ location /sub {
 - Ubuntu 20.04+
 - Debian 11+
 - CentOS 8+
+- OpenEuler 22.03+
 - Fedora 36+
 - Arch Linux
 - Parch Linux
@@ -282,7 +285,8 @@ Our platform offers compatibility with a diverse range of architectures and devi
 
 - English
 - Farsi
-- Chinese
+- Traditional Chinese
+- Simplified Chinese
 - Russian
 - Vietnamese
 - Spanish
@@ -315,11 +319,14 @@ Our platform offers compatibility with a diverse range of architectures and devi
 <details>
   <summary>Click for default settings details</summary>
 
-### Username & Password & webbasepath:
+### Username, Password, Port, and Web Base Path
 
-  These will be generated randomly if you skip modifying them.
+If you choose not to modify these settings, they will be generated randomly (this does not apply to Docker).
 
-  - **Port:** the default port for panel is `2053`
+**Default Settings for Docker:**
+- **Username:** admin
+- **Password:** admin
+- **Port:** 2053
 
 ### Database Management:
 
@@ -480,6 +487,7 @@ Enter the user ID in input field number 4. The Telegram accounts with this id wi
 
 #### Usage
 
+- [API Documentation](https://documenter.getpostman.com/view/5146551/2sAXxP8Y12)
 - `/login` with `POST` user data: `{username: '', password: ''}` for login
 - `/panel/api/inbounds` base for following actions:
 
@@ -510,9 +518,7 @@ Enter the user ID in input field number 4. The Telegram accounts with this id wi
 - `client.password` for TROJAN
 - `client.email` for Shadowsocks
 
-
-- [API Documentation](https://documenter.getpostman.com/view/16802678/2s9YkgD5jm)
-- [<img src="https://run.pstmn.io/button.svg" alt="Run In Postman" style="width: 128px; height: 32px;">](https://app.getpostman.com/run-collection/16802678-1a4c9270-ac77-40ed-959a-7aa56dc4a415?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D16802678-1a4c9270-ac77-40ed-959a-7aa56dc4a415%26entityType%3Dcollection%26workspaceId%3D2cd38c01-c851-4a15-a972-f181c23359d9)
+- [<img src="https://run.pstmn.io/button.svg" alt="Run In Postman" style="width: 128px; height: 32px;">](https://god.gw.postman.com/run-collection/5146551-e6aac565-e0e2-46df-acff-2607a51bbd04?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D5146551-e6aac565-e0e2-46df-acff-2607a51bbd04%26entityType%3Dcollection%26workspaceId%3Dd64f609f-485a-4951-9b8f-876b3f917124)
 </details>
 
 ## Environment Variables

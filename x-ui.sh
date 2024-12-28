@@ -1060,7 +1060,7 @@ ssl_cert_issue() {
 
     # issue the certificate
     ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
-    ~/.acme.sh/acme.sh --issue -d ${domain} --listen-v6 --standalone --httpport ${WebPort}
+    ~/.acme.sh/acme.sh --issue -d ${domain} --listen-v6 --standalone --httpport ${WebPort} --force
     if [ $? -ne 0 ]; then
         LOGE "Issuing certificate failed, please check logs."
         rm -rf ~/.acme.sh/${domain}
@@ -1177,7 +1177,7 @@ ssl_cert_issue_CF() {
         export CF_Email="${CF_AccountEmail}"
 
         # Issue the certificate using Cloudflare DNS
-        ~/.acme.sh/acme.sh --issue --dns dns_cf -d ${CF_Domain} -d *.${CF_Domain} --log
+        ~/.acme.sh/acme.sh --issue --dns dns_cf -d ${CF_Domain} -d *.${CF_Domain} --log --force
         if [ $? -ne 0 ]; then
             LOGE "Certificate issuance failed, script exiting..."
             exit 1

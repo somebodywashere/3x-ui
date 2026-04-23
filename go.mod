@@ -31,7 +31,7 @@ require (
 )
 
 require (
-	github.com/Azure/go-ntlmssp v0.1.0 // indirect
+	github.com/Azure/go-ntlmssp v0.1.1 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/apernet/quic-go v0.57.2-0.20260111184307-eec823306178 // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect

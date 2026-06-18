@@ -27,7 +27,7 @@
     "@tanstack/react-query": "^5.101.0",
     "@tanstack/react-query-devtools": "^5.101.0",
     "antd": "^6.4.3",
-    "axios": "^1.17.0",
+    "axios": "^1.18.0",
     "codemirror": "^6.0.2",
     "dayjs": "^1.11.21",
     "i18next": "^26.3.1",
